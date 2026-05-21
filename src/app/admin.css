@@ -1,0 +1,714 @@
+/* ===================================================================
+   AndresAI Admin — Ops Console
+   A tech/futuristic theme that shares DNA with the chat (Orbitron type,
+   dark space background) but leans toward a control-panel feel:
+   teal-mint accent instead of pure cyan, monospace IDs, corner brackets,
+   sidebar rail glow, scan lines, denser data layout.
+   =================================================================== */
+
+.admin-root {
+  /* Surface */
+  --admin-bg: #06070d;
+  --admin-bg-elevated: #0c0e18;
+  --admin-panel: rgba(14, 16, 28, 0.78);
+  --admin-panel-solid: #0c0e18;
+  --admin-panel-strong: rgba(10, 12, 22, 0.94);
+  --admin-card: #0f1220;
+  --admin-row: rgba(255, 255, 255, 0.02);
+  --admin-row-hover: rgba(0, 255, 209, 0.04);
+
+  /* Accents */
+  --admin-accent: #00ffd1; /* teal-mint primary */
+  --admin-accent-soft: rgba(0, 255, 209, 0.18);
+  --admin-accent-hover: rgba(0, 255, 209, 0.08);
+  --admin-accent-strong: rgba(0, 255, 209, 0.45);
+  --admin-secondary: #7c3aed;
+  --admin-warning: #ffb800;
+  --admin-danger: #ff3366;
+  --admin-success: #34d399;
+
+  /* Text */
+  --admin-text: #e7e9f2;
+  --admin-text-dim: #8a8fa3;
+  --admin-text-muted: #4d5266;
+  --admin-text-faint: #353a48;
+
+  /* Borders / grids */
+  --admin-border: rgba(0, 255, 209, 0.12);
+  --admin-border-strong: rgba(0, 255, 209, 0.28);
+  --admin-grid: rgba(0, 255, 209, 0.05);
+  --admin-scanline: rgba(0, 255, 209, 0.12);
+
+  /* Shadows / glow */
+  --admin-glow: 0 0 0 1px rgba(0, 255, 209, 0.1), 0 8px 24px rgba(0, 0, 0, 0.4);
+  --admin-glow-focus:
+    0 0 0 1px rgba(0, 255, 209, 0.4), 0 0 24px rgba(0, 255, 209, 0.18);
+
+  /* Override shadcn variables so its components fit the theme */
+  --background: var(--admin-bg);
+  --foreground: var(--admin-text);
+  --card: var(--admin-panel-solid);
+  --card-foreground: var(--admin-text);
+  --popover: var(--admin-panel-strong);
+  --popover-foreground: var(--admin-text);
+  --primary: var(--admin-accent);
+  --primary-foreground: #04141a;
+  --secondary: rgba(255, 255, 255, 0.04);
+  --secondary-foreground: var(--admin-text);
+  --muted: rgba(255, 255, 255, 0.04);
+  --muted-foreground: var(--admin-text-dim);
+  --accent: rgba(0, 255, 209, 0.1);
+  --accent-foreground: var(--admin-accent);
+  --destructive: var(--admin-danger);
+  --border: var(--admin-border);
+  --input: rgba(255, 255, 255, 0.06);
+  --ring: var(--admin-accent-strong);
+  --sidebar: #08090f;
+  --sidebar-foreground: var(--admin-text);
+  --sidebar-primary: var(--admin-accent);
+  --sidebar-primary-foreground: #04141a;
+  --sidebar-accent: rgba(0, 255, 209, 0.1);
+  --sidebar-accent-foreground: var(--admin-accent);
+  --sidebar-border: var(--admin-border);
+  --sidebar-ring: var(--admin-accent-strong);
+
+  font-family: "Exo 2", system-ui, sans-serif;
+  color: var(--admin-text);
+  background: var(--admin-bg);
+  min-height: 100vh;
+}
+
+/* Faint grid backdrop on the admin shell */
+/* Faint grid backdrop — applied as a fixed pseudo, behind all content.
+   pointer-events: none so it never blocks clicks; z-index: -1 so positioned
+   children (including portaled dialogs) sit above it without us having to
+   force `position: relative; z-index: 1` on every child, which would break
+   Radix Portal's `position: fixed`. */
+.admin-root::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--admin-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--admin-grid) 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* -------------------------------------------------------- Typography --- */
+
+.admin-eyebrow {
+  font-family: "Orbitron", monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--admin-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.admin-eyebrow::before {
+  content: "//";
+  color: var(--admin-text-muted);
+  font-weight: 400;
+}
+
+.admin-title {
+  font-family: "Orbitron", monospace;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--admin-text);
+  line-height: 1.05;
+}
+
+.admin-mono {
+  font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+}
+
+.admin-mono-dim {
+  font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  color: var(--admin-text-dim);
+}
+
+/* -------------------------------------------------------- Panels ------ */
+
+.admin-panel {
+  background: var(--admin-panel);
+  border: 1px solid var(--admin-border);
+  backdrop-filter: blur(14px);
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--admin-scanline), transparent);
+  opacity: 0.5;
+}
+
+/* Corner brackets (decorative) — apply to a positioned parent */
+.admin-brackets::before,
+.admin-brackets::after,
+.admin-brackets > .bracket-tl,
+.admin-brackets > .bracket-br {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-color: var(--admin-accent);
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.admin-brackets::before {
+  content: "";
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid;
+  border-left: 1px solid;
+}
+
+.admin-brackets::after {
+  content: "";
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid;
+  border-right: 1px solid;
+}
+
+/* Scan line — animated horizontal sweep across top of a container */
+.admin-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-scan::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--admin-accent) 50%,
+    transparent
+  );
+  animation: admin-scan 6s linear infinite;
+  opacity: 0.45;
+}
+
+@keyframes admin-scan {
+  0% {
+    left: -50%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* -------------------------------------------------------- Sidebar ----- */
+
+.admin-sidebar {
+  background: linear-gradient(180deg, #07080e 0%, #06070d 100%);
+  border-right: 1px solid var(--admin-border);
+  position: relative;
+}
+
+.admin-sidebar::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: -1px;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--admin-accent-soft) 30%, var(--admin-accent-soft) 70%, transparent);
+  opacity: 0.4;
+}
+
+.admin-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.75rem 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--admin-text-dim);
+  position: relative;
+  transition: color 0.2s ease, background 0.2s ease;
+  cursor: pointer;
+}
+
+.admin-nav-item:hover {
+  color: var(--admin-text);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-nav-item.is-active {
+  color: var(--admin-accent);
+  background: var(--admin-accent-hover);
+}
+
+.admin-nav-item.is-active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8%;
+  bottom: 8%;
+  width: 2px;
+  background: var(--admin-accent);
+  box-shadow: 0 0 8px var(--admin-accent), 0 0 16px var(--admin-accent-soft);
+  border-radius: 2px;
+}
+
+.admin-nav-arrow {
+  font-family: "Orbitron", monospace;
+  font-size: 0.7rem;
+  color: var(--admin-text-muted);
+  flex-shrink: 0;
+}
+
+.admin-nav-item.is-active .admin-nav-arrow {
+  color: var(--admin-accent);
+}
+
+.admin-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--admin-accent);
+  box-shadow: 0 0 8px var(--admin-accent), 0 0 16px var(--admin-accent-soft);
+  animation: admin-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes admin-pulse {
+  0%, 100% {
+    box-shadow: 0 0 6px var(--admin-accent), 0 0 12px var(--admin-accent-soft);
+  }
+  50% {
+    box-shadow: 0 0 14px var(--admin-accent), 0 0 24px var(--admin-accent-soft);
+  }
+}
+
+/* -------------------------------------------------------- Topbar ------ */
+
+.admin-topbar {
+  border-bottom: 1px solid var(--admin-border);
+  background: rgba(6, 7, 13, 0.7);
+  backdrop-filter: blur(14px);
+}
+
+.admin-breadcrumb {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--admin-text-dim);
+  letter-spacing: 0.04em;
+}
+
+.admin-breadcrumb-slash {
+  color: var(--admin-text-faint);
+  margin: 0 0.5rem;
+}
+
+.admin-breadcrumb-active {
+  color: var(--admin-accent);
+}
+
+/* -------------------------------------------------------- Page header - */
+
+.admin-page-title {
+  font-family: "Orbitron", monospace;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--admin-text);
+  position: relative;
+  display: inline-block;
+}
+
+.admin-page-title::after {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 48px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--admin-accent), transparent);
+  box-shadow: 0 0 8px var(--admin-accent-soft);
+}
+
+/* -------------------------------------------------------- Data table - */
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table thead th {
+  font-family: "Orbitron", monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--admin-border);
+  background: rgba(255, 255, 255, 0.015);
+}
+
+.admin-table tbody td {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  font-size: 0.85rem;
+  color: var(--admin-text);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr {
+  transition: background 0.15s ease;
+  position: relative;
+}
+
+.admin-table tbody tr:hover {
+  background: var(--admin-row-hover);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-id {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--admin-accent);
+  font-weight: 600;
+}
+
+.admin-id-dim {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.78rem;
+  color: var(--admin-text-dim);
+}
+
+/* -------------------------------------------------------- Badge ------- */
+
+.admin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  font-family: "Orbitron", monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.admin-badge-accent {
+  border-color: var(--admin-accent-strong);
+  color: var(--admin-accent);
+  background: var(--admin-accent-hover);
+}
+
+.admin-badge-violet {
+  border-color: rgba(124, 58, 237, 0.4);
+  color: #c4b5fd;
+  background: rgba(124, 58, 237, 0.1);
+}
+
+.admin-badge-warning {
+  border-color: rgba(255, 184, 0, 0.4);
+  color: var(--admin-warning);
+  background: rgba(255, 184, 0, 0.08);
+}
+
+.admin-badge-success {
+  border-color: rgba(52, 211, 153, 0.4);
+  color: var(--admin-success);
+  background: rgba(52, 211, 153, 0.08);
+}
+
+.admin-badge-danger {
+  border-color: rgba(255, 51, 102, 0.4);
+  color: var(--admin-danger);
+  background: rgba(255, 51, 102, 0.08);
+}
+
+/* -------------------------------------------------------- Buttons ----- */
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-family: "Orbitron", monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border-radius: 8px;
+  border: 1px solid var(--admin-border);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--admin-text);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-btn:hover:not(:disabled) {
+  border-color: var(--admin-accent);
+  color: var(--admin-accent);
+  background: var(--admin-accent-hover);
+  box-shadow: 0 0 0 1px var(--admin-accent-soft), 0 6px 16px rgba(0, 255, 209, 0.08);
+}
+
+.admin-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-btn-primary {
+  border-color: var(--admin-accent-strong);
+  color: var(--admin-accent);
+  background: var(--admin-accent-hover);
+  box-shadow: 0 0 0 1px var(--admin-accent-soft);
+}
+
+.admin-btn-primary:hover:not(:disabled) {
+  background: rgba(0, 255, 209, 0.14);
+  box-shadow:
+    0 0 0 1px var(--admin-accent-strong),
+    0 8px 24px rgba(0, 255, 209, 0.18);
+}
+
+.admin-btn-danger {
+  border-color: rgba(255, 51, 102, 0.3);
+  color: #ff8aa6;
+}
+
+.admin-btn-danger:hover:not(:disabled) {
+  border-color: var(--admin-danger);
+  color: #ffffff;
+  background: rgba(255, 51, 102, 0.14);
+  box-shadow: 0 0 0 1px rgba(255, 51, 102, 0.4), 0 6px 18px rgba(255, 51, 102, 0.12);
+}
+
+.admin-btn-icon {
+  padding: 0.4rem;
+  width: 32px;
+  height: 32px;
+}
+
+/* -------------------------------------------------------- Inputs ------ */
+
+.admin-input,
+.admin-textarea {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  color: var(--admin-text);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-input::placeholder,
+.admin-textarea::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.admin-input:focus,
+.admin-textarea:focus {
+  outline: none;
+  border-color: var(--admin-accent);
+  box-shadow: var(--admin-glow-focus);
+}
+
+.admin-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.admin-label {
+  display: block;
+  font-family: "Orbitron", monospace;
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+  margin-bottom: 0.5rem;
+}
+
+/* -------------------------------------------------------- Cards ------- */
+
+.admin-overview-card {
+  position: relative;
+  background: var(--admin-panel);
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+}
+
+.admin-overview-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--admin-accent-soft) 50%, transparent);
+  opacity: 0.6;
+}
+
+.admin-overview-card:hover {
+  border-color: var(--admin-accent-strong);
+  background: rgba(14, 16, 28, 0.92);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--admin-accent-soft);
+}
+
+.admin-overview-card-num {
+  font-family: "Orbitron", monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--admin-accent);
+  margin-bottom: 0.6rem;
+}
+
+.admin-overview-card-title {
+  font-family: "Orbitron", monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--admin-text);
+  margin-bottom: 0.35rem;
+}
+
+.admin-overview-card-desc {
+  font-size: 0.85rem;
+  color: var(--admin-text-dim);
+  line-height: 1.5;
+}
+
+.admin-overview-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--admin-border);
+  background: rgba(0, 255, 209, 0.05);
+  color: var(--admin-accent);
+  margin-bottom: 1rem;
+}
+
+/* -------------------------------------------------------- Dialog ------ */
+
+[data-slot="dialog-content"].admin-dialog,
+.admin-root [data-slot="dialog-content"] {
+  background: rgba(8, 10, 18, 0.96);
+  border: 1px solid var(--admin-border-strong);
+  backdrop-filter: blur(20px);
+  box-shadow:
+    0 0 0 1px var(--admin-accent-soft),
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.admin-root [data-slot="dialog-content"]::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--admin-accent) 50%,
+    transparent
+  );
+  opacity: 0.5;
+}
+
+/* -------------------------------------------------------- Toolbar ----- */
+
+.admin-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-search {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex: 1;
+  max-width: 560px;
+}
+
+.admin-search-prefix {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.6rem 0.65rem 0.6rem 0.85rem;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--admin-border);
+  border-right: none;
+  border-radius: 8px 0 0 8px;
+  font-family: "Orbitron", monospace;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--admin-text-dim);
+  flex-shrink: 0;
+}
+
+.admin-search input {
+  border-radius: 0;
+  border-right: none;
+}
+
+.admin-search button {
+  border-radius: 0 8px 8px 0;
+}
+
+/* -------------------------------------------------------- Meta line --- */
+
+.admin-meta {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.72rem;
+  color: var(--admin-text-dim);
+  letter-spacing: 0.02em;
+}
+
+.admin-meta strong {
+  color: var(--admin-text);
+  font-weight: 500;
+}
