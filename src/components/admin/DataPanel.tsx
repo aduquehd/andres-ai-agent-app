@@ -54,6 +54,8 @@ export function DataPanel<T>({
   const [searchTerm, setSearchTerm] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const hasItemsRef = useRef(false);
+  hasItemsRef.current = items.length > 0;
 
   // Filter/sort changes bump refreshKey from the parent. Reset offset to 0 so
   // the user doesn't end up on a now-invalid page. The next effect picks up
@@ -68,7 +70,9 @@ export function DataPanel<T>({
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
+    // Skip the spinner on background refreshes (we already have data on screen).
+    // First load and explicit pagination/search still show the loader.
+    if (!hasItemsRef.current) setLoading(true);
     fetcher({ q: query || undefined, limit: pageSize, offset })
       .then((page) => {
         if (cancelled) return;
@@ -106,7 +110,6 @@ export function DataPanel<T>({
     <div className="space-y-6">
       <div className="space-y-2">
         <div className="admin-eyebrow">{title} · Stream</div>
-        <h1 className="admin-page-title">{title}</h1>
         {description ? (
           <p className="text-sm text-[color:var(--admin-text-dim)] max-w-2xl pt-2">
             {description}

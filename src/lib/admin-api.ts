@@ -121,6 +121,8 @@ export function me(): Promise<AdminUser> {
 
 // --- Dashboard
 
+export type MessagesRange = "this_month" | "30d" | "60d" | "90d" | "all";
+
 export interface DashboardStats {
   totals: {
     users: number;
@@ -134,6 +136,7 @@ export interface DashboardStats {
     avg_latency_ms: number | null;
   };
   messages_by_day: Array<{ date: string; incoming: number; outgoing: number }>;
+  messages_range: MessagesRange;
   messages_by_country: Array<{ country: string; count: number }>;
   direction_split: { incoming: number; outgoing: number };
   latency: {
@@ -145,8 +148,13 @@ export interface DashboardStats {
   generated_at: string;
 }
 
-export function getDashboardStats(): Promise<DashboardStats> {
-  return adminFetch("/api/admin/dashboard/stats");
+export function getDashboardStats(params?: {
+  messagesRange?: MessagesRange;
+}): Promise<DashboardStats> {
+  const search = new URLSearchParams();
+  if (params?.messagesRange) search.set("messages_range", params.messagesRange);
+  const qs = search.toString();
+  return adminFetch(`/api/admin/dashboard/stats${qs ? `?${qs}` : ""}`);
 }
 
 // --- Users
@@ -168,7 +176,28 @@ export function getUser(id: number): Promise<UserRow> {
   return adminFetch(`/api/admin/users/${id}`);
 }
 
-export function deleteUser(id: number): Promise<{ ok: boolean }> {
+export interface UserStats {
+  user: UserRow;
+  messages_total: number;
+  messages_incoming: number;
+  messages_outgoing: number;
+  agent_messages_total: number;
+  first_message_at: string | null;
+  last_message_at: string | null;
+  avg_response_time_ms: number | null;
+}
+
+export function getUserStats(id: number): Promise<UserStats> {
+  return adminFetch(`/api/admin/users/${id}/stats`);
+}
+
+export interface DeleteUserResult {
+  ok: boolean;
+  messages_deleted: number;
+  agent_messages_deleted: number;
+}
+
+export function deleteUser(id: number): Promise<DeleteUserResult> {
   return adminFetch(`/api/admin/users/${id}`, { method: "DELETE" });
 }
 

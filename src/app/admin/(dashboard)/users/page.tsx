@@ -6,6 +6,7 @@ import { toast } from "sonner";
 
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
 import { deleteUser, listUsers, type UserRow } from "@/lib/admin-api";
+import { useAdminLiveStream } from "@/lib/admin-realtime";
 import { formatDateTime, formatUserAgent, truncate } from "@/lib/format";
 
 export default function UsersPage() {
@@ -14,6 +15,14 @@ export default function UsersPage() {
   const fetcher = useCallback(
     (params: { q?: string; limit: number; offset: number }) => listUsers(params),
     [],
+  );
+
+  useAdminLiveStream(
+    useCallback((event) => {
+      if (event.type === "user.created" || event.type === "user.deleted") {
+        setRefresh((r) => r + 1);
+      }
+    }, []),
   );
 
   async function handleDelete(id: number) {

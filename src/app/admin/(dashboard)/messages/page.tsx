@@ -9,6 +9,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { useAdminLiveStream } from "@/lib/admin-realtime";
+
 import {
   Dialog,
   DialogContent,
@@ -25,6 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
+import { UserDetailsDialog } from "@/components/admin/UserDetailsDialog";
 import {
   deleteMessage,
   listMessageCountries,
@@ -32,7 +35,8 @@ import {
   type MessageRow,
   type MessageSort,
 } from "@/lib/admin-api";
-import { formatDateTime, formatUserAgent, truncate } from "@/lib/format";
+import { ClientBadge } from "@/lib/client-icons";
+import { formatDateTime, truncate } from "@/lib/format";
 
 type DirectionFilter = "all" | "incoming" | "outgoing";
 
@@ -50,6 +54,7 @@ const DIRECTION_LABEL: Record<DirectionFilter, string> = {
 export default function MessagesPage() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState<MessageRow | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   // Filter / sort state
   const [direction, setDirection] = useState<DirectionFilter>("all");
@@ -69,6 +74,21 @@ export default function MessagesPage() {
   useEffect(() => {
     setRefresh((r) => r + 1);
   }, [direction, country, sort]);
+
+  // Live updates from the admin WebSocket: refetch on any event that touches
+  // the messages list. DataPanel suppresses the loader on background refreshes
+  // so this won't flicker.
+  useAdminLiveStream(
+    useCallback((event) => {
+      if (
+        event.type === "message.created" ||
+        event.type === "message.deleted" ||
+        event.type === "user.deleted"
+      ) {
+        setRefresh((r) => r + 1);
+      }
+    }, []),
+  );
 
   const fetcher = useCallback(
     (params: { q?: string; limit: number; offset: number }) =>
@@ -176,7 +196,28 @@ export default function MessagesPage() {
         key: "user_id",
         header: "User",
         width: "80px",
-        cell: (m) => <span className="admin-id-dim">#{m.user_id}</span>,
+        cell: (m) => (
+          <button
+            type="button"
+            className="admin-id-dim hover:text-[color:var(--admin-accent)] transition-colors cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setSelectedUserId(m.user_id);
+            }}
+            aria-label={`Open user ${m.user_id}`}
+          >
+            #{m.user_id}
+          </button>
+        ),
+      },
+      {
+        key: "created_at",
+        header: "Created",
+        cell: (m) => (
+          <span className="admin-mono text-xs text-[color:var(--admin-text-dim)] whitespace-nowrap">
+            {formatDateTime(m.created_at)}
+          </span>
+        ),
       },
       {
         key: "message",
@@ -215,6 +256,11 @@ export default function MessagesPage() {
         ),
       },
       {
+        key: "user_agent",
+        header: "Client",
+        cell: (m) => <ClientBadge userAgent={m.user_agent} />,
+      },
+      {
         key: "response_time_ms",
         header: "Latency",
         width: "90px",
@@ -226,24 +272,6 @@ export default function MessagesPage() {
           ) : (
             <span className="text-[color:var(--admin-text-muted)]">—</span>
           ),
-      },
-      {
-        key: "user_agent",
-        header: "Client",
-        cell: (m) => (
-          <span className="admin-mono text-xs text-[color:var(--admin-text-dim)]">
-            {formatUserAgent(m.user_agent) || "—"}
-          </span>
-        ),
-      },
-      {
-        key: "created_at",
-        header: "Created",
-        cell: (m) => (
-          <span className="admin-mono text-xs text-[color:var(--admin-text-dim)] whitespace-nowrap">
-            {formatDateTime(m.created_at)}
-          </span>
-        ),
       },
       {
         key: "actions",
@@ -346,6 +374,12 @@ export default function MessagesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <UserDetailsDialog
+        userId={selectedUserId}
+        onClose={() => setSelectedUserId(null)}
+        onDeleted={() => setRefresh((r) => r + 1)}
+      />
     </>
   );
 }

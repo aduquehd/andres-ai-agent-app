@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Activity,
   Brain,
@@ -27,7 +27,22 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-import { getDashboardStats, type DashboardStats } from "@/lib/admin-api";
+import { getDashboardStats, type DashboardStats, type MessagesRange } from "@/lib/admin-api";
+import { useAdminLiveStream } from "@/lib/admin-realtime";
+
+const POLL_INTERVAL_MS = 15_000;
+
+const MESSAGES_RANGES: { value: MessagesRange; label: string }[] = [
+  { value: "all", label: "All time" },
+  { value: "this_month", label: "This month" },
+  { value: "30d", label: "30d" },
+  { value: "60d", label: "60d" },
+  { value: "90d", label: "90d" },
+];
+
+const RANGE_LABELS: Record<MessagesRange, string> = Object.fromEntries(
+  MESSAGES_RANGES.map((r) => [r.value, r.label]),
+) as Record<MessagesRange, string>;
 
 const ACCENT = "#00ffd1";
 const VIOLET = "#c4b5fd";
@@ -39,13 +54,22 @@ export function Dashboard() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [messagesRange, setMessagesRange] = useState<MessagesRange>("all");
 
+  // Track the latest messagesRange so the 15s poll fetches the current selection.
+  const messagesRangeRef = useRef(messagesRange);
+  messagesRangeRef.current = messagesRange;
+
+  // Initial load + refetch when the range changes (loader shown only on first load).
   useEffect(() => {
     let cancelled = false;
-    getDashboardStats()
+    const firstLoad = stats === null;
+    if (firstLoad) setLoading(true);
+    getDashboardStats({ messagesRange })
       .then((s) => {
         if (!cancelled) {
           setStats(s);
+          setError(null);
           setLoading(false);
         }
       })
@@ -53,19 +77,90 @@ export function Dashboard() {
         if (cancelled) return;
         const message = err instanceof Error ? err.message : "Failed to load stats";
         setError(message);
-        toast.error(message);
+        if (firstLoad) toast.error(message);
         setLoading(false);
       });
     return () => {
       cancelled = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messagesRange]);
+
+  // Poll the dashboard every 15s to refresh aggregates (messages/day, direction
+  // split, top countries, latency). Counts are also incremented live below.
+  useEffect(() => {
+    const id = setInterval(() => {
+      getDashboardStats({ messagesRange: messagesRangeRef.current })
+        .then((s) => {
+          setStats(s);
+          setError(null);
+        })
+        .catch(() => {
+          // Stay quiet on background poll failures.
+        });
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(id);
   }, []);
+
+  // Live counters: bump totals/today the moment events arrive.
+  useAdminLiveStream(
+    useCallback((event) => {
+      if (event.type === "user.created") {
+        setStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                totals: { ...prev.totals, users: prev.totals.users + 1 },
+              }
+            : prev,
+        );
+      } else if (event.type === "user.deleted") {
+        setStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                totals: {
+                  ...prev.totals,
+                  users: Math.max(0, prev.totals.users - 1),
+                  messages: Math.max(0, prev.totals.messages - event.messages_deleted),
+                },
+              }
+            : prev,
+        );
+      } else if (event.type === "message.created") {
+        setStats((prev) => {
+          if (!prev) return prev;
+          const isToday =
+            !!event.message.created_at &&
+            new Date(event.message.created_at).toDateString() === new Date().toDateString();
+          return {
+            ...prev,
+            totals: { ...prev.totals, messages: prev.totals.messages + 1 },
+            today: isToday
+              ? { ...prev.today, messages: prev.today.messages + 1 }
+              : prev.today,
+          };
+        });
+      } else if (event.type === "message.deleted") {
+        setStats((prev) =>
+          prev
+            ? {
+                ...prev,
+                totals: {
+                  ...prev.totals,
+                  messages: Math.max(0, prev.totals.messages - 1),
+                },
+              }
+            : prev,
+        );
+      }
+    }, []),
+  );
 
   return (
     <div className="space-y-8">
       <div className="space-y-2">
-        <div className="admin-eyebrow">Control Panel</div>
-        <h1 className="admin-page-title">Dashboard</h1>
+        <div className="admin-eyebrow">Control Panel · Dashboard</div>
         <p className="text-sm text-[color:var(--admin-text-dim)] max-w-2xl pt-3">
           Live snapshot of usage, throughput, and the knowledge base powering the agent.
         </p>
@@ -78,7 +173,11 @@ export function Dashboard() {
           {error ?? "No data available."}
         </div>
       ) : (
-        <DashboardContent stats={stats} />
+        <DashboardContent
+          stats={stats}
+          messagesRange={messagesRange}
+          onMessagesRangeChange={setMessagesRange}
+        />
       )}
     </div>
   );
@@ -104,7 +203,15 @@ function DashboardSkeleton() {
   );
 }
 
-function DashboardContent({ stats }: { stats: DashboardStats }) {
+function DashboardContent({
+  stats,
+  messagesRange,
+  onMessagesRangeChange,
+}: {
+  stats: DashboardStats;
+  messagesRange: MessagesRange;
+  onMessagesRangeChange: (r: MessagesRange) => void;
+}) {
   const directionData = [
     { name: "Outgoing", value: stats.direction_split.outgoing, color: ACCENT },
     { name: "Incoming", value: stats.direction_split.incoming, color: VIOLET_DEEP },
@@ -152,24 +259,39 @@ function DashboardContent({ stats }: { stats: DashboardStats }) {
 
       {/* Messages over time */}
       <Panel
-        eyebrow="Throughput · Last 30 Days"
+        eyebrow={`Throughput · ${RANGE_LABELS[messagesRange]}`}
         title="Messages per day"
         right={
-          <div className="flex items-center gap-3 admin-mono text-[0.66rem] uppercase tracking-widest text-[color:var(--admin-text-muted)]">
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ background: ACCENT }}
-              />
-              Out
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span
-                className="h-2 w-2 rounded-full"
-                style={{ background: VIOLET_DEEP }}
-              />
-              In
-            </span>
+          <div className="flex flex-wrap items-center justify-end gap-4">
+            <div className="flex items-center gap-1.5">
+              {MESSAGES_RANGES.map((r) => (
+                <button
+                  key={r.value}
+                  type="button"
+                  onClick={() => onMessagesRangeChange(r.value)}
+                  className={`admin-btn ${messagesRange === r.value ? "admin-btn-primary" : ""}`}
+                  style={{ padding: "0.3rem 0.65rem", fontSize: "0.62rem" }}
+                >
+                  {r.label}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-3 admin-mono text-[0.66rem] uppercase tracking-widest text-[color:var(--admin-text-muted)]">
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: ACCENT }}
+                />
+                Out
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ background: VIOLET_DEEP }}
+                />
+                In
+              </span>
+            </div>
           </div>
         }
       >
@@ -193,10 +315,12 @@ function DashboardContent({ stats }: { stats: DashboardStats }) {
               <XAxis
                 dataKey="date"
                 tickFormatter={(v: string) =>
-                  new Date(v).toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                  })
+                  new Date(v).toLocaleDateString(
+                    undefined,
+                    messagesRange === "all" || messagesRange === "90d"
+                      ? { month: "short", year: "2-digit" }
+                      : { month: "short", day: "numeric" },
+                  )
                 }
                 tick={{ fill: TEXT_DIM, fontSize: 11, fontFamily: "JetBrains Mono" }}
                 stroke="transparent"
@@ -337,7 +461,7 @@ function DashboardContent({ stats }: { stats: DashboardStats }) {
       <div className="flex items-center justify-between admin-mono text-[0.66rem] uppercase tracking-widest text-[color:var(--admin-text-muted)]">
         <span className="inline-flex items-center gap-2">
           <span className="admin-status-dot" />
-          live data
+          live · counts via ws · aggregates poll 15s
         </span>
         <span>
           {stats.totals.agent_contexts} agent_ctx entries · generated{" "}
