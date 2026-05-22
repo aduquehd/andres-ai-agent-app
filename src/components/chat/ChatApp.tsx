@@ -72,6 +72,8 @@ export function ChatApp() {
   const initRef = useRef(false);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
   const scrollRafRef = useRef<number | null>(null);
+  const lastScrollTopRef = useRef(0);
+  const scrollUpIdleRef = useRef<number | null>(null);
 
   const hasMessages = messages.length > 0;
 
@@ -173,6 +175,44 @@ export function ChatApp() {
     },
     [],
   );
+
+  // Tint the scrollbar magenta while the user is actively scrolling upward,
+  // and let the CSS transition fade it back to the default gradient when they
+  // stop or scroll down.
+  useEffect(() => {
+    const el = conversationRef.current;
+    if (!el) return;
+    lastScrollTopRef.current = el.scrollTop;
+    const IDLE_MS = 180;
+    const THRESHOLD = 2;
+    const onScroll = () => {
+      const top = el.scrollTop;
+      const delta = top - lastScrollTopRef.current;
+      lastScrollTopRef.current = top;
+      if (delta < -THRESHOLD) {
+        el.classList.add("scrolling-up");
+        if (scrollUpIdleRef.current !== null) window.clearTimeout(scrollUpIdleRef.current);
+        scrollUpIdleRef.current = window.setTimeout(() => {
+          el.classList.remove("scrolling-up");
+          scrollUpIdleRef.current = null;
+        }, IDLE_MS);
+      } else if (delta > THRESHOLD) {
+        if (scrollUpIdleRef.current !== null) {
+          window.clearTimeout(scrollUpIdleRef.current);
+          scrollUpIdleRef.current = null;
+        }
+        el.classList.remove("scrolling-up");
+      }
+    };
+    el.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      el.removeEventListener("scroll", onScroll);
+      if (scrollUpIdleRef.current !== null) {
+        window.clearTimeout(scrollUpIdleRef.current);
+        scrollUpIdleRef.current = null;
+      }
+    };
+  }, []);
 
   const handleApiError = useCallback((err: unknown) => {
     const message =
