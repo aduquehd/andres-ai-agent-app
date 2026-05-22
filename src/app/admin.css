@@ -42,7 +42,7 @@
   /* Shadows / glow */
   --admin-glow: 0 0 0 1px rgba(0, 255, 209, 0.1), 0 8px 24px rgba(0, 0, 0, 0.4);
   --admin-glow-focus:
-    0 0 0 1px rgba(0, 255, 209, 0.4), 0 0 24px rgba(0, 255, 209, 0.18);
+    0 0 0 1px rgba(0, 255, 209, 0.28), 0 0 14px rgba(0, 255, 209, 0.08);
 
   /* Override shadcn variables so its components fit the theme */
   --background: var(--admin-bg);
@@ -110,10 +110,19 @@
   gap: 0.4rem;
 }
 
+/* The "//" prefix is part of the cyberpunk identity but appears on every label,
+   which is visually loud. Dimmed and faint so it sits in the background.
+   Suppressed entirely inside row-detail contexts via .admin-eyebrow-bare. */
 .admin-eyebrow::before {
   content: "//";
-  color: var(--admin-text-muted);
+  color: var(--admin-text-faint, var(--admin-text-muted));
+  opacity: 0.5;
   font-weight: 400;
+  margin-right: 0.35rem;
+}
+
+.admin-eyebrow-bare::before {
+  content: none;
 }
 
 .admin-title {
@@ -497,9 +506,12 @@
     0 8px 24px rgba(0, 255, 209, 0.18);
 }
 
+/* Destructive buttons stay quiet at rest (gray, faint border) and only
+   surface their danger color on hover. This matches industry convention:
+   the action is visible but not screaming for attention until you reach for it. */
 .admin-btn-danger {
-  border-color: rgba(255, 51, 102, 0.3);
-  color: #ff8aa6;
+  border-color: var(--admin-border);
+  color: var(--admin-text-dim);
 }
 
 .admin-btn-danger:hover:not(:disabled) {
@@ -670,7 +682,7 @@
   align-items: center;
   gap: 0;
   flex: 1;
-  max-width: 560px;
+  max-width: 460px;
 }
 
 .admin-search-prefix {
@@ -711,4 +723,88 @@
 .admin-meta strong {
   color: var(--admin-text);
   font-weight: 500;
+}
+
+/* -------------------------- Chat-bubble markdown -------------------- */
+
+.admin-bubble-md > * + * {
+  margin-top: 0.6rem;
+}
+.admin-bubble-md p {
+  margin: 0;
+}
+.admin-bubble-md strong {
+  color: var(--admin-text);
+  font-weight: 600;
+}
+.admin-bubble-md em {
+  color: var(--admin-text-dim);
+  font-style: italic;
+}
+.admin-bubble-md ul,
+.admin-bubble-md ol {
+  margin: 0.25rem 0;
+  padding-left: 1.25rem;
+}
+.admin-bubble-md ul {
+  list-style: disc;
+}
+.admin-bubble-md ol {
+  list-style: decimal;
+}
+.admin-bubble-md li {
+  margin: 0.15rem 0;
+}
+.admin-bubble-md li > ul,
+.admin-bubble-md li > ol {
+  margin-top: 0.2rem;
+}
+.admin-bubble-md a {
+  color: var(--admin-accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 255, 209, 0.4);
+  text-underline-offset: 2px;
+}
+.admin-bubble-md a:hover {
+  text-decoration-color: var(--admin-accent);
+}
+.admin-bubble-md code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--admin-text);
+}
+.admin-bubble-md pre {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  padding: 0.75rem;
+  overflow-x: auto;
+}
+.admin-bubble-md pre code {
+  background: transparent;
+  padding: 0;
+  font-size: 0.8rem;
+}
+.admin-bubble-md h1,
+.admin-bubble-md h2,
+.admin-bubble-md h3,
+.admin-bubble-md h4 {
+  font-family: "Orbitron", monospace;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--admin-text);
+  margin-top: 0.25rem;
+}
+.admin-bubble-md h1 { font-size: 1rem; }
+.admin-bubble-md h2 { font-size: 0.94rem; }
+.admin-bubble-md h3 { font-size: 0.88rem; }
+.admin-bubble-md h4 { font-size: 0.84rem; }
+.admin-bubble-md blockquote {
+  border-left: 2px solid var(--admin-border);
+  padding-left: 0.7rem;
+  color: var(--admin-text-dim);
+  margin: 0.25rem 0;
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { marked } from "marked";
 import { toast } from "sonner";
 import {
@@ -38,6 +38,24 @@ function isRateLimit(msg: string): boolean {
   return msg.includes("Rate limit") || msg.includes("Too many requests");
 }
 
+interface MessageProps {
+  role: ChatMessage["role"];
+  content: string;
+  timestamp: string;
+}
+
+// Memoized so untouched messages don't re-render (or re-parse markdown)
+// every time a new chunk arrives during streaming.
+const Message = memo(function Message({ role, content, timestamp }: MessageProps) {
+  return (
+    <div
+      id={`msg-${timestamp}`}
+      className={`message ${role === "user" ? "user" : "model"}`}
+      dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
+    />
+  );
+});
+
 export function ChatApp() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -53,6 +71,7 @@ export function ChatApp() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const initRef = useRef(false);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
+  const scrollRafRef = useRef<number | null>(null);
 
   const hasMessages = messages.length > 0;
 
@@ -130,10 +149,30 @@ export function ChatApp() {
   }, []);
 
   // --- chat actions
-  const scrollToBottom = useCallback(() => {
-    const el = conversationRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+  // rAF-coalesced scroll. Multiple calls within a frame collapse to one DOM
+  // write, and we skip the scroll entirely if the user has scrolled up to
+  // read history (>200px from bottom) so streaming doesn't fight them.
+  const scrollToBottom = useCallback((opts?: { force?: boolean }) => {
+    const force = opts?.force ?? false;
+    if (scrollRafRef.current !== null) return;
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null;
+      const el = conversationRef.current;
+      if (!el) return;
+      if (!force) {
+        const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+        if (distanceFromBottom > 200) return;
+      }
+      el.scrollTop = el.scrollHeight;
+    });
   }, []);
+
+  useEffect(
+    () => () => {
+      if (scrollRafRef.current !== null) cancelAnimationFrame(scrollRafRef.current);
+    },
+    [],
+  );
 
   const handleApiError = useCallback((err: unknown) => {
     const message =
@@ -145,8 +184,13 @@ export function ChatApp() {
 
   const upsertMessage = useCallback((msg: ChatMessage) => {
     setMessages((prev) => {
-      const idx = prev.findIndex((m) => m.timestamp === msg.timestamp);
+      // Updates during streaming almost always target the most recent message,
+      // so scan from the end.
+      const idx = prev.findLastIndex((m) => m.timestamp === msg.timestamp);
       if (idx === -1) return [...prev, msg];
+      if (prev[idx].content === msg.content && prev[idx].role === msg.role) {
+        return prev;
+      }
       const next = prev.slice();
       next[idx] = msg;
       return next;
@@ -164,8 +208,7 @@ export function ChatApp() {
           browserIdRef.current,
           (msg) => {
             upsertMessage(msg);
-            // queueMicrotask to ensure DOM is updated before scroll
-            queueMicrotask(scrollToBottom);
+            scrollToBottom();
           },
         );
         setInput("");
@@ -226,7 +269,7 @@ export function ChatApp() {
       .then((history) => {
         if (history.length > 0) {
           setMessages(history);
-          queueMicrotask(scrollToBottom);
+          scrollToBottom({ force: true });
         }
       })
       .catch((err) => {
@@ -252,19 +295,6 @@ export function ChatApp() {
   }, [themeModalMode, aboutOpen, closeThemeModal, closeAboutPanel]);
 
   // --- render
-
-  const renderedMessages = useMemo(
-    () =>
-      messages.map((m) => (
-        <div
-          key={m.timestamp}
-          id={`msg-${m.timestamp}`}
-          className={`message ${m.role === "user" ? "user" : "model"}`}
-          dangerouslySetInnerHTML={{ __html: renderMarkdown(m.content) }}
-        />
-      )),
-    [messages],
-  );
 
   return (
     <>
@@ -449,7 +479,14 @@ export function ChatApp() {
                 </button>
               </section>
             )}
-            {renderedMessages}
+            {messages.map((m) => (
+              <Message
+                key={m.timestamp}
+                role={m.role}
+                content={m.content}
+                timestamp={m.timestamp}
+              />
+            ))}
           </div>
 
           <div
@@ -655,6 +692,42 @@ export function ChatApp() {
                 <li>
                   <span>05</span>
                   Docker · containerized
+                </li>
+              </ul>
+            </section>
+
+            <section className="about-section">
+              <h3 className="about-section-title">Frontend &amp; realtime</h3>
+              <p>
+                A single Next.js 16 app serves both this chat at <code>/</code>{" "}
+                and a separate ops console at <code>/admin</code>. The chat
+                consumes streamed responses; the admin opens a long-lived
+                WebSocket to render every new conversation as it lands.
+              </p>
+              <ul className="about-stack">
+                <li>
+                  <span>01</span>
+                  React 19 · TypeScript
+                </li>
+                <li>
+                  <span>02</span>
+                  Next.js 16 · App Router · Turbopack
+                </li>
+                <li>
+                  <span>03</span>
+                  Tailwind v4 · shadcn/ui · Radix
+                </li>
+                <li>
+                  <span>04</span>
+                  Streaming HTTP · marked · sonner
+                </li>
+                <li>
+                  <span>05</span>
+                  WebSockets · admin live updates
+                </li>
+                <li>
+                  <span>06</span>
+                  Vercel · edge-first deploy
                 </li>
               </ul>
             </section>

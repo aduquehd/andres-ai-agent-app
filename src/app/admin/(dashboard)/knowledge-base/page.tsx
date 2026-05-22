@@ -154,13 +154,15 @@ export default function KnowledgeBasePage() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
-            <DialogTitle>
-              <span className="admin-eyebrow mb-2 block">
-                {editing ? "Edit Entry" : "New Entry"}
-              </span>
-              <span className="admin-mono text-base">
-                {editing ? `kb_entry #${editing.id}` : "kb_entry"}
-              </span>
+            <DialogTitle asChild>
+              <div className="flex flex-col gap-1">
+                <span className="admin-eyebrow">
+                  {editing ? "Edit Entry" : "New Entry"}
+                </span>
+                <span className="admin-mono text-base">
+                  {editing ? `kb_entry #${editing.id}` : "kb_entry"}
+                </span>
+              </div>
             </DialogTitle>
           </DialogHeader>
           <KnowledgeBaseForm

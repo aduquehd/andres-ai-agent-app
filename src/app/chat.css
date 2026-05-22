@@ -2260,6 +2260,19 @@ body::before {
   color: rgba(255, 255, 255, 0.78);
 }
 
+.about-section p code {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 0.85em;
+  padding: 0.05em 0.35em;
+  border-radius: 4px;
+  background: rgba(0, 255, 209, 0.08);
+  color: var(--accent);
+}
+
+:root[data-theme="light"] .about-section p code {
+  background: rgba(0, 0, 0, 0.06);
+}
+
 .about-list {
   list-style: none;
   padding: 0;

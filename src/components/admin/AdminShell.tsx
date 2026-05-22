@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   MessageSquare,
+  MessagesSquare,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -29,9 +30,15 @@ const NAV: NavItem[] = [
   { href: "/admin", label: "Overview", cmd: "overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Users", cmd: "users.list", icon: Users },
   { href: "/admin/messages", label: "Messages", cmd: "messages.list", icon: MessageSquare },
+  {
+    href: "/admin/conversations",
+    label: "Conversations",
+    cmd: "messages.conversations",
+    icon: MessagesSquare,
+  },
   { href: "/admin/agent-messages", label: "Agent Messages", cmd: "agent.messages", icon: Bot },
   { href: "/admin/knowledge-base", label: "Knowledge Base", cmd: "kb.entries", icon: Brain },
-  { href: "/admin/agent-contexts", label: "Agent Contexts", cmd: "agent.context", icon: Database },
+  { href: "/admin/agent-contexts", label: "Agent Contexts", cmd: "agent.contexts", icon: Database },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
@@ -127,7 +134,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         <div className="px-3 py-3 border-t border-[color:var(--admin-border)]">
           <div className="px-2 mb-2 text-[0.62rem] tracking-[0.18em] uppercase font-mono text-[color:var(--admin-text-muted)]">
-            session
+            signed in
           </div>
           <div className="px-2 mb-3 admin-mono text-[0.78rem] text-[color:var(--admin-text)] truncate">
             {user.username}

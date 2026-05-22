@@ -159,9 +159,12 @@ export function Dashboard() {
 
   return (
     <div className="space-y-8">
-      <div className="space-y-2">
-        <div className="admin-eyebrow">Control Panel · Dashboard</div>
-        <p className="text-sm text-[color:var(--admin-text-dim)] max-w-2xl pt-3">
+      <div className="space-y-1.5">
+        <div className="admin-eyebrow">Control Panel</div>
+        <h1 className="admin-mono text-2xl font-semibold text-[color:var(--admin-text)]">
+          Dashboard
+        </h1>
+        <p className="text-sm text-[color:var(--admin-text-dim)] max-w-2xl pt-1">
           Live snapshot of usage, throughput, and the knowledge base powering the agent.
         </p>
       </div>
@@ -368,7 +371,7 @@ function DashboardContent({
           {stats.direction_split.incoming + stats.direction_split.outgoing === 0 ? (
             <EmptyState>No messages yet.</EmptyState>
           ) : (
-            <div className="h-64 w-full">
+            <div className="h-64 w-full relative">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -399,6 +402,23 @@ function DashboardContent({
                   />
                 </PieChart>
               </ResponsiveContainer>
+              {/* Center label — total + breakdown ratio. */}
+              <div
+                className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none"
+                style={{ paddingBottom: "2rem" /* compensate for the legend */ }}
+              >
+                <div className="admin-mono text-2xl text-[color:var(--admin-text)]">
+                  {(stats.direction_split.incoming + stats.direction_split.outgoing).toLocaleString()}
+                </div>
+                <div className="admin-mono text-[0.62rem] uppercase tracking-widest text-[color:var(--admin-text-muted)] mt-0.5">
+                  {Math.round(
+                    (stats.direction_split.outgoing /
+                      (stats.direction_split.incoming + stats.direction_split.outgoing)) *
+                      100,
+                  )}
+                  % out
+                </div>
+              </div>
             </div>
           )}
         </Panel>
@@ -449,6 +469,8 @@ function DashboardContent({
                     dataKey="count"
                     fill={ACCENT}
                     radius={[0, 4, 4, 0]}
+                    barSize={20}
+                    maxBarSize={28}
                   />
                 </BarChart>
               </ResponsiveContainer>
@@ -464,8 +486,9 @@ function DashboardContent({
           live · counts via ws · aggregates poll 15s
         </span>
         <span>
-          {stats.totals.agent_contexts} agent_ctx entries · generated{" "}
-          {new Date(stats.generated_at).toLocaleTimeString()}
+          {stats.totals.agent_contexts}{" "}
+          {stats.totals.agent_contexts === 1 ? "agent_ctx entry" : "agent_ctx entries"} ·
+          generated {new Date(stats.generated_at).toLocaleTimeString()}
         </span>
       </div>
     </>

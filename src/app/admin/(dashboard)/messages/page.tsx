@@ -26,8 +26,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConversationDetailDialog } from "@/components/admin/ConversationDetailDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
-import { UserDetailsDialog } from "@/components/admin/UserDetailsDialog";
 import {
   deleteMessage,
   listMessageCountries,
@@ -36,7 +36,7 @@ import {
   type MessageSort,
 } from "@/lib/admin-api";
 import { ClientBadge } from "@/lib/client-icons";
-import { formatDateTime, truncate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 
 type DirectionFilter = "all" | "incoming" | "outgoing";
 
@@ -170,12 +170,6 @@ export default function MessagesPage() {
   const columns: Column<MessageRow>[] = useMemo(
     () => [
       {
-        key: "id",
-        header: "ID",
-        width: "70px",
-        cell: (m) => <span className="admin-id">#{m.id}</span>,
-      },
-      {
         key: "direction",
         header: directionHeader,
         width: "110px",
@@ -222,13 +216,14 @@ export default function MessagesPage() {
       {
         key: "message",
         header: "Message",
+        width: "420px",
         cell: (m) => (
-          <div className="flex items-start gap-2">
-            <span className="text-sm">{truncate(m.message, 80)}</span>
+          <div className="flex items-center gap-2 max-w-[400px]" title={m.message}>
+            <span className="text-sm truncate flex-1 min-w-0">{m.message}</span>
             {m.message.length > 80 ? (
               <button
                 type="button"
-                className="admin-btn px-2 py-0.5 text-[0.62rem]"
+                className="admin-btn px-2 py-0.5 text-[0.62rem] shrink-0"
                 onClick={(e) => {
                   e.stopPropagation();
                   setOpen(m);
@@ -375,7 +370,7 @@ export default function MessagesPage() {
         </DialogContent>
       </Dialog>
 
-      <UserDetailsDialog
+      <ConversationDetailDialog
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
         onDeleted={() => setRefresh((r) => r + 1)}

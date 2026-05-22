@@ -191,6 +191,39 @@ export function getUserStats(id: number): Promise<UserStats> {
   return adminFetch(`/api/admin/users/${id}/stats`);
 }
 
+// --- Conversations
+
+export type ConversationSort = "last_activity_desc" | "user_newest" | "messages_desc";
+
+export interface ConversationRow {
+  user: UserRow;
+  messages_total: number;
+  messages_incoming: number;
+  messages_outgoing: number;
+  first_message_at: string | null;
+  last_message_at: string | null;
+  preview: {
+    message: string;
+    direction: "incoming" | "outgoing" | null;
+    created_at: string | null;
+  } | null;
+}
+
+export function listConversations(params: {
+  q?: string;
+  sort?: ConversationSort;
+  limit?: number;
+  offset?: number;
+}): Promise<Paginated<ConversationRow>> {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.sort) search.set("sort", params.sort);
+  if (params.limit) search.set("limit", String(params.limit));
+  if (params.offset) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return adminFetch(`/api/admin/conversations${qs ? `?${qs}` : ""}`);
+}
+
 export interface DeleteUserResult {
   ok: boolean;
   messages_deleted: number;

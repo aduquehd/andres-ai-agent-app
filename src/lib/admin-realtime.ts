@@ -56,9 +56,15 @@ function connect() {
   }
   socket = ws;
   ws.onopen = () => {
-    backoffMs = 1000; // reset backoff on a successful connection
+    if (socket !== ws) return; // stale handler — a newer socket replaced us
+    backoffMs = 1000;
   };
+  // Stale-handler guard: React strict-mode (and intermittent reconnects) can
+  // produce a brief window where an old WebSocket is still receiving frames
+  // while a new one has already been installed as ``socket``. Without this
+  // check, ``dispatch`` would fire twice per server event.
   ws.onmessage = (ev) => {
+    if (socket !== ws) return;
     try {
       const event = JSON.parse(ev.data) as AdminEvent;
       dispatch(event);
@@ -70,6 +76,7 @@ function connect() {
     // onclose will run next and trigger reconnect.
   };
   ws.onclose = (ev) => {
+    if (socket !== ws) return; // an older instance closing — ignore
     socket = null;
     // 4401 = auth required. Don't retry; the user is probably logged out.
     if (ev.code === 4401) return;

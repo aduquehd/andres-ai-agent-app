@@ -108,10 +108,13 @@ export function DataPanel<T>({
 
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <div className="admin-eyebrow">{title} · Stream</div>
+      <div className="space-y-1.5">
+        <div className="admin-eyebrow">Stream</div>
+        <h1 className="admin-mono text-2xl font-semibold text-[color:var(--admin-text)]">
+          {title}
+        </h1>
         {description ? (
-          <p className="text-sm text-[color:var(--admin-text-dim)] max-w-2xl pt-2">
+          <p className="text-sm text-[color:var(--admin-text-dim)] max-w-2xl pt-1">
             {description}
           </p>
         ) : null}

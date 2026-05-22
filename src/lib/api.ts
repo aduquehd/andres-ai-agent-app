@@ -62,6 +62,16 @@ function parseMessages(text: string): ChatMessage[] {
     .filter((m): m is ChatMessage => m !== null);
 }
 
+function parseLine(line: string): ChatMessage | null {
+  const trimmed = line.trim();
+  if (!trimmed) return null;
+  try {
+    return JSON.parse(trimmed) as ChatMessage;
+  } catch {
+    return null;
+  }
+}
+
 export async function fetchChatHistory(
   userId: string,
   browserId: string,
@@ -102,9 +112,18 @@ export async function sendChatMessage(
       const { done, value } = await reader.read();
       if (done) break;
       buffer += decoder.decode(value, { stream: true });
-      parseMessages(buffer).forEach(onMessage);
+      // Only parse complete lines (everything before the final newline).
+      // The trailing partial line is kept in the buffer for the next chunk.
+      let newlineIdx: number;
+      while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.slice(0, newlineIdx);
+        buffer = buffer.slice(newlineIdx + 1);
+        const msg = parseLine(line);
+        if (msg) onMessage(msg);
+      }
     }
-    if (buffer.trim()) parseMessages(buffer).forEach(onMessage);
+    const tail = parseLine(buffer);
+    if (tail) onMessage(tail);
   } finally {
     reader.releaseLock();
   }

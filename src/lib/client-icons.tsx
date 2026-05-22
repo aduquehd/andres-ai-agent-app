@@ -181,7 +181,9 @@ export function ClientBadge({
   }
   const { browser, browserVersion, os, BrowserIcon, OSIcon, browserColor, osColor } = info;
   return (
-    <span className={`inline-flex items-center gap-1.5 admin-mono text-xs ${className ?? ""}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 admin-mono text-xs whitespace-nowrap ${className ?? ""}`}
+    >
       <BrowserIcon className="h-3.5 w-3.5 shrink-0" style={{ color: browserColor }} />
       <span className="text-[color:var(--admin-text-dim)]">
         {browser}
