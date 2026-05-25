@@ -19,12 +19,18 @@ import {
 
 const DESKTOP_PANEL_QUERY = "(min-width: 1100px)";
 
-const PROMPTS = [
+type Prompt = { tag: string; text: string; featured?: boolean };
+
+const PROMPTS: readonly Prompt[] = [
   { tag: "Stack", text: "What's your experience with Python and AI?" },
-  { tag: "Career", text: "Tell me about your current job." },
+  {
+    tag: "Career",
+    text: "What is your full experience details? Include all the information possible, dates, and tech stack.",
+    featured: true,
+  },
   { tag: "Open Source Projects", text: "What open source projects have you built?" },
   { tag: "Learning", text: "What are you currently learning?" },
-] as const;
+];
 
 type ThemeModalMode = "warning" | "success" | null;
 
@@ -74,6 +80,14 @@ export function ChatApp() {
   const scrollRafRef = useRef<number | null>(null);
   const lastScrollTopRef = useRef(0);
   const scrollUpIdleRef = useRef<number | null>(null);
+  // Tracks the in-flight chat request so the user can cancel it via the stop
+  // button. Cleared in handleSend's finally block.
+  const abortControllerRef = useRef<AbortController | null>(null);
+  // Synchronous re-entry guard. `isLoading` state lags behind the abort, so
+  // any extra click that lands between abort and the finally re-running can
+  // start a duplicate request. This ref blocks it without waiting for React
+  // to flush state.
+  const sendInFlightRef = useRef(false);
 
   const hasMessages = messages.length > 0;
 
@@ -239,8 +253,11 @@ export function ChatApp() {
 
   const handleSend = useCallback(
     async (prompt: string) => {
-      if (!prompt.trim() || isLoading) return;
+      if (!prompt.trim() || sendInFlightRef.current) return;
+      sendInFlightRef.current = true;
       setIsLoading(true);
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
       try {
         await sendChatMessage(
           prompt,
@@ -250,17 +267,36 @@ export function ChatApp() {
             upsertMessage(msg);
             scrollToBottom();
           },
+          controller.signal,
         );
         setInput("");
       } catch (err) {
+        // User-initiated stop: silent, leaves the partial response in place.
+        const isAbort =
+          (err instanceof DOMException && err.name === "AbortError") ||
+          (err instanceof Error && err.name === "AbortError");
+        if (isAbort) return;
         handleApiError(err);
       } finally {
+        if (abortControllerRef.current === controller) {
+          abortControllerRef.current = null;
+        }
+        sendInFlightRef.current = false;
         setIsLoading(false);
         inputRef.current?.focus();
       }
     },
-    [isLoading, upsertMessage, scrollToBottom, handleApiError],
+    [upsertMessage, scrollToBottom, handleApiError],
   );
+
+  const handleStop = useCallback((e?: React.MouseEvent<HTMLButtonElement>) => {
+    e?.preventDefault();
+    e?.stopPropagation();
+    abortControllerRef.current?.abort();
+  }, []);
+
+  // Abort any in-flight request if the component unmounts mid-stream.
+  useEffect(() => () => abortControllerRef.current?.abort(), []);
 
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
@@ -487,7 +523,7 @@ export function ChatApp() {
                   {PROMPTS.map((p) => (
                     <button
                       key={p.text}
-                      className="prompt-chip"
+                      className={`prompt-chip${p.featured ? " prompt-chip-featured" : ""}`}
                       type="button"
                       role="listitem"
                       onClick={() => handlePromptChip(p.text)}
@@ -594,20 +630,38 @@ export function ChatApp() {
                 onChange={(e) => setInput(e.target.value)}
                 ref={inputRef}
               />
-              <button className="send-button" type="submit" aria-label="Send message">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <line x1="22" y1="2" x2="11" y2="13"></line>
-                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                </svg>
+              <button
+                className={`send-button${isLoading ? " is-stopping" : ""}`}
+                type={isLoading ? "button" : "submit"}
+                onClick={isLoading ? handleStop : undefined}
+                aria-label={isLoading ? "Stop response" : "Send message"}
+                title={isLoading ? "Stop response" : "Send message"}
+              >
+                {isLoading ? (
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    aria-hidden="true"
+                  >
+                    <rect x="6" y="6" width="12" height="12" rx="1.5" />
+                  </svg>
+                ) : (
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                )}
               </button>
             </div>
             <div className={`new-chat-container ${hasMessages ? "show" : ""}`}>

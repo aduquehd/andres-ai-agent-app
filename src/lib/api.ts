@@ -90,6 +90,7 @@ export async function sendChatMessage(
   userId: string,
   browserId: string,
   onMessage: (msg: ChatMessage) => void,
+  signal?: AbortSignal,
 ): Promise<void> {
   const formData = new FormData();
   formData.append("prompt", prompt);
@@ -98,6 +99,7 @@ export async function sendChatMessage(
     method: "POST",
     body: formData,
     headers: chatAuthHeaders(userId, browserId),
+    signal,
   });
 
   if (!response.ok) await handleApiError(response);
