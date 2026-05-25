@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
 import {
   deleteAgentMessage,
@@ -30,6 +31,7 @@ function prettyJSON(input: string): string {
 export default function AgentMessagesPage() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState<AgentMessageRow | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const fetcher = useCallback(
     (params: { q?: string; limit: number; offset: number }) =>
@@ -37,12 +39,13 @@ export default function AgentMessagesPage() {
     [],
   );
 
-  async function handleDelete(id: number) {
-    if (!confirm(`Delete agent message ${id}?`)) return;
+  async function performDelete() {
+    if (confirmDeleteId == null) return;
     try {
-      await deleteAgentMessage(id);
+      await deleteAgentMessage(confirmDeleteId);
       toast.success("Agent message deleted");
       setRefresh((r) => r + 1);
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
     }
@@ -102,7 +105,7 @@ export default function AgentMessagesPage() {
           className="admin-btn admin-btn-icon admin-btn-danger"
           onClick={(e) => {
             e.stopPropagation();
-            handleDelete(m.id);
+            setConfirmDeleteId(m.id);
           }}
           aria-label="Delete"
         >
@@ -141,6 +144,16 @@ export default function AgentMessagesPage() {
           </pre>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+        title={`Delete agent message #${confirmDeleteId ?? ""}?`}
+        description="This will permanently remove the agent message record. This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={performDelete}
+      />
     </>
   );
 }

@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
 import { KnowledgeBaseForm } from "@/components/admin/KnowledgeBaseForm";
 import {
@@ -23,18 +24,20 @@ export default function KnowledgeBasePage() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<KnowledgeBaseRow | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const fetcher = useCallback(
     (params: { q?: string; limit: number; offset: number }) => listKnowledgeBase(params),
     [],
   );
 
-  async function handleDelete(id: number) {
-    if (!confirm(`Delete knowledge base entry ${id}?`)) return;
+  async function performDelete() {
+    if (confirmDeleteId == null) return;
     try {
-      await deleteKnowledgeBase(id);
+      await deleteKnowledgeBase(confirmDeleteId);
       toast.success("Entry deleted");
       setRefresh((r) => r + 1);
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
     }
@@ -120,7 +123,7 @@ export default function KnowledgeBasePage() {
             className="admin-btn admin-btn-icon admin-btn-danger"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete(k.id);
+              setConfirmDeleteId(k.id);
             }}
             aria-label="Delete"
           >
@@ -172,6 +175,16 @@ export default function KnowledgeBasePage() {
           />
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+        title={`Delete knowledge base entry #${confirmDeleteId ?? ""}?`}
+        description="This will permanently remove the entry from the knowledge base. This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={performDelete}
+      />
     </>
   );
 }

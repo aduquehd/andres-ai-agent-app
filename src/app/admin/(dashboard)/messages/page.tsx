@@ -26,6 +26,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ConversationDetailDialog } from "@/components/admin/ConversationDetailDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
 import {
@@ -55,6 +56,7 @@ export default function MessagesPage() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState<MessageRow | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   // Filter / sort state
   const [direction, setDirection] = useState<DirectionFilter>("all");
@@ -103,12 +105,13 @@ export default function MessagesPage() {
     [direction, country, sort],
   );
 
-  async function handleDelete(id: number) {
-    if (!confirm(`Delete message ${id}?`)) return;
+  async function performDelete() {
+    if (confirmDeleteId == null) return;
     try {
-      await deleteMessage(id);
+      await deleteMessage(confirmDeleteId);
       toast.success("Message deleted");
       setRefresh((r) => r + 1);
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
     }
@@ -279,7 +282,7 @@ export default function MessagesPage() {
             className="admin-btn admin-btn-icon admin-btn-danger"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete(m.id);
+              setConfirmDeleteId(m.id);
             }}
             aria-label="Delete message"
           >
@@ -374,6 +377,16 @@ export default function MessagesPage() {
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
         onDeleted={() => setRefresh((r) => r + 1)}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+        title={`Delete message #${confirmDeleteId ?? ""}?`}
+        description="This will permanently remove the message. This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={performDelete}
       />
     </>
   );

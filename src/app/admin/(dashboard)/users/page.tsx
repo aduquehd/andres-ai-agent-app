@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { ConversationDetailDialog } from "@/components/admin/ConversationDetailDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
 import { deleteUser, listUsers, type UserRow } from "@/lib/admin-api";
@@ -14,6 +15,7 @@ import { formatDateTime } from "@/lib/format";
 export default function UsersPage() {
   const [refresh, setRefresh] = useState(0);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const fetcher = useCallback(
     (params: { q?: string; limit: number; offset: number }) => listUsers(params),
@@ -28,12 +30,14 @@ export default function UsersPage() {
     }, []),
   );
 
-  async function handleDelete(id: number) {
-    if (!confirm(`Delete user ${id}? This cascades to all their messages.`)) return;
+  async function performDelete() {
+    if (confirmDeleteId == null) return;
+    const id = confirmDeleteId;
     try {
       await deleteUser(id);
       toast.success("User deleted");
       setRefresh((r) => r + 1);
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
     }
@@ -137,7 +141,7 @@ export default function UsersPage() {
           className="admin-btn admin-btn-icon admin-btn-danger"
           onClick={(e) => {
             e.stopPropagation();
-            handleDelete(u.id);
+            setConfirmDeleteId(u.id);
           }}
           aria-label="Delete user"
         >
@@ -164,6 +168,16 @@ export default function UsersPage() {
         userId={selectedUserId}
         onClose={() => setSelectedUserId(null)}
         onDeleted={() => setRefresh((r) => r + 1)}
+      />
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+        title={`Delete user #${confirmDeleteId ?? ""}?`}
+        description="This cascades to all of the user's messages and agent records. This cannot be undone."
+        confirmLabel="Delete user"
+        variant="destructive"
+        onConfirm={performDelete}
       />
     </>
   );

@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import {
   deleteUser,
   getUserStats,
@@ -50,7 +51,7 @@ export function ConversationDetailDialog({
   const [messagesTotal, setMessagesTotal] = useState(0);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
-  const [deleting, setDeleting] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef<number | null>(null);
 
@@ -187,26 +188,18 @@ export function ConversationDetailDialog({
     ),
   );
 
-  async function handleDelete() {
+  async function performDelete() {
     if (!stats) return;
-    const confirmMsg =
-      `Delete user #${stats.user.id} and ALL related data?\n\n` +
-      `· ${stats.messages_total} messages\n` +
-      `· ${stats.agent_messages_total} agent message records\n\n` +
-      `This cannot be undone.`;
-    if (!confirm(confirmMsg)) return;
-    setDeleting(true);
     try {
       const result = await deleteUser(stats.user.id);
       toast.success(
         `User deleted (${result.messages_deleted} messages, ${result.agent_messages_deleted} agent records)`,
       );
+      setConfirmOpen(false);
       onDeleted?.();
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
-    } finally {
-      setDeleting(false);
     }
   }
 
@@ -215,6 +208,7 @@ export function ConversationDetailDialog({
   const hasOlder = messages.length < messagesTotal;
 
   return (
+    <>
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-6xl sm:max-w-6xl p-0 max-h-[90vh] overflow-hidden flex flex-col">
         <DialogHeader className="px-6 pt-6 pb-3 border-b border-[color:var(--admin-border)]">
@@ -315,15 +309,10 @@ export function ConversationDetailDialog({
                 <button
                   type="button"
                   className="admin-btn admin-btn-danger w-full inline-flex items-center justify-center gap-2 whitespace-nowrap"
-                  onClick={handleDelete}
-                  disabled={deleting}
+                  onClick={() => setConfirmOpen(true)}
                   title="Delete user and cascade-remove all messages + agent records"
                 >
-                  {deleting ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-3.5 w-3.5" />
-                  )}
+                  <Trash2 className="h-3.5 w-3.5" />
                   Delete user
                 </button>
               </>
@@ -377,6 +366,38 @@ export function ConversationDetailDialog({
         </div>
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={confirmOpen}
+      onOpenChange={setConfirmOpen}
+      title={
+        statsForCurrent
+          ? `Delete user #${statsForCurrent.user.id} and ALL related data?`
+          : "Delete user?"
+      }
+      description={
+        statsForCurrent ? (
+          <div className="space-y-3">
+            <ul className="space-y-1 admin-mono text-xs text-[color:var(--admin-text)]">
+              <li>
+                · {statsForCurrent.messages_total.toLocaleString()} messages
+              </li>
+              <li>
+                · {statsForCurrent.agent_messages_total.toLocaleString()} agent
+                message records
+              </li>
+            </ul>
+            <p className="text-[color:var(--admin-danger)]">
+              This cannot be undone.
+            </p>
+          </div>
+        ) : null
+      }
+      confirmLabel="Delete user"
+      variant="destructive"
+      onConfirm={performDelete}
+    />
+    </>
   );
 }
 
@@ -498,12 +519,18 @@ function StatCard({
       ? "text-[#c4b5fd]"
       : "text-[color:var(--admin-text)]";
   return (
-    <div className="border border-[color:var(--admin-border)] rounded-md p-2 bg-black/30">
-      <div className="admin-eyebrow flex items-center gap-1 mb-0.5">
-        <span className={toneClass}>{icon}</span>
-        <span>{label}</span>
+    <div className="border border-[color:var(--admin-border)] rounded-md px-3 py-2.5 bg-black/30">
+      <div className="flex items-center justify-between gap-2 mb-1.5 min-w-0">
+        <span className="admin-mono text-[0.6rem] uppercase tracking-[0.16em] text-[color:var(--admin-text-muted)] truncate">
+          {label}
+        </span>
+        <span className={`${toneClass} shrink-0 opacity-70`}>{icon}</span>
       </div>
-      <div className={`admin-mono text-base ${toneClass}`}>{value}</div>
+      <div
+        className={`admin-mono text-2xl font-semibold leading-none tabular-nums ${toneClass}`}
+      >
+        {value}
+      </div>
     </div>
   );
 }

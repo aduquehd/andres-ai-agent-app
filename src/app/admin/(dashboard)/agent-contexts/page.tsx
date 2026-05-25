@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/admin/ConfirmDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
 import { AgentContextForm } from "@/components/admin/AgentContextForm";
 import {
@@ -23,6 +24,7 @@ export default function AgentContextsPage() {
   const [refresh, setRefresh] = useState(0);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<AgentContextRow | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
 
   const fetcher = useCallback(
     (params: { q?: string; limit: number; offset: number }) =>
@@ -30,12 +32,13 @@ export default function AgentContextsPage() {
     [],
   );
 
-  async function handleDelete(id: number) {
-    if (!confirm(`Delete agent context ${id}?`)) return;
+  async function performDelete() {
+    if (confirmDeleteId == null) return;
     try {
-      await deleteAgentContext(id);
+      await deleteAgentContext(confirmDeleteId);
       toast.success("Agent context deleted");
       setRefresh((r) => r + 1);
+      setConfirmDeleteId(null);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
     }
@@ -118,7 +121,7 @@ export default function AgentContextsPage() {
             className="admin-btn admin-btn-icon admin-btn-danger"
             onClick={(e) => {
               e.stopPropagation();
-              handleDelete(a.id);
+              setConfirmDeleteId(a.id);
             }}
             aria-label="Delete"
           >
@@ -170,6 +173,16 @@ export default function AgentContextsPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteId !== null}
+        onOpenChange={(o) => !o && setConfirmDeleteId(null)}
+        title={`Delete agent context #${confirmDeleteId ?? ""}?`}
+        description="This will permanently remove the context entry. This cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+        onConfirm={performDelete}
+      />
     </>
   );
 }
