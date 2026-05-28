@@ -47,8 +47,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  // Zooming left enabled for accessibility (low-vision users rely on it).
   viewportFit: "cover",
   themeColor: "#0a0a0f",
 };

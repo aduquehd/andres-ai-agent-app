@@ -595,6 +595,7 @@ export function ChatApp() {
             <button
               className="suggestions-bar-more"
               type="button"
+              aria-label="How does this work?"
               onClick={() => openAboutPanel("about-how-it-works")}
             >
               <svg
