@@ -1,6 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { Orbitron, Exo_2 } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
+// Self-hosted (next/font) instead of a render-blocking <link> to Google Fonts.
+// Both are variable fonts, so we don't pin weights. Exposed as CSS variables
+// consumed by chat.css / admin.css; `display: swap` + the auto-generated
+// size-adjusted fallback keep the font swap from shifting layout.
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-orbitron",
+});
+
+const exo2 = Exo_2({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-exo2",
+});
 
 export const metadata: Metadata = {
   title: "AndresAI Agent by aduquehd - Intelligent AI Assistant",
@@ -43,7 +60,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className={`${orbitron.variable} ${exo2.variable}`}>
         {children}
         <Toaster richColors closeButton position="top-right" />
       </body>

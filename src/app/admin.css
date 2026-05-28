@@ -72,7 +72,7 @@
   --sidebar-border: var(--admin-border);
   --sidebar-ring: var(--admin-accent-strong);
 
-  font-family: "Exo 2", system-ui, sans-serif;
+  font-family: var(--font-exo2), system-ui, sans-serif;
   color: var(--admin-text);
   background: var(--admin-bg);
   min-height: 100vh;
@@ -99,7 +99,7 @@
 /* -------------------------------------------------------- Typography --- */
 
 .admin-eyebrow {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -126,7 +126,7 @@
 }
 
 .admin-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-weight: 800;
   letter-spacing: 0.06em;
   color: var(--admin-text);
@@ -282,7 +282,7 @@
 }
 
 .admin-nav-arrow {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.7rem;
   color: var(--admin-text-muted);
   flex-shrink: 0;
@@ -337,7 +337,7 @@
 /* -------------------------------------------------------- Page header - */
 
 .admin-page-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.6rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -365,7 +365,7 @@
 }
 
 .admin-table thead th {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -420,7 +420,7 @@
   padding: 0.2rem 0.55rem;
   border: 1px solid var(--admin-border);
   border-radius: 999px;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -467,7 +467,7 @@
   justify-content: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -561,7 +561,7 @@
 
 .admin-label {
   display: block;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -602,7 +602,7 @@
 }
 
 .admin-overview-card-num {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -611,7 +611,7 @@
 }
 
 .admin-overview-card-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.05rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -693,7 +693,7 @@
   border: 1px solid var(--admin-border);
   border-right: none;
   border-radius: 8px 0 0 8px;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -792,7 +792,7 @@
 .admin-bubble-md h2,
 .admin-bubble-md h3,
 .admin-bubble-md h4 {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-weight: 600;
   letter-spacing: 0.04em;
   color: var(--admin-text);

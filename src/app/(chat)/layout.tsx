@@ -13,12 +13,8 @@ const GA_TRACKING_ID = process.env.NEXT_PUBLIC_GA_TRACKING_ID;
 export default function ChatLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Exo+2:wght@300;400;500;600&display=swap"
-      />
+      {/* Fonts are self-hosted via next/font in the root layout — no external
+          Google Fonts request needed here. */}
       {GA_TRACKING_ID ? (
         <>
           <Script

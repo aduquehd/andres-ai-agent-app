@@ -153,7 +153,7 @@ body {
 }
 
 body {
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   background: var(--primary-bg);
   color: var(--text-primary);
   position: relative;
@@ -234,7 +234,7 @@ body::before {
 .portfolio-link {
   text-decoration: none;
   color: var(--text-primary);
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1rem;
   font-weight: 600;
   text-transform: none;
@@ -359,7 +359,7 @@ body::before {
 }
 
 .app-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: 0.12em;
@@ -385,7 +385,7 @@ body::before {
 }
 
 .app-subtitle {
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-size: 0.9rem;
   font-weight: 300;
   color: var(--text-secondary);
@@ -418,7 +418,7 @@ body::before {
 }
 
 .status-text {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.875rem;
   color: var(--text-primary);
   font-weight: 500;
@@ -433,7 +433,7 @@ body::before {
 }
 
 .developer-name {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.5rem;
   font-weight: 900;
   color: var(--text-primary);
@@ -444,7 +444,7 @@ body::before {
 .developer-title {
   font-size: 0.9rem;
   color: var(--text-secondary);
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-weight: 400;
 }
 
@@ -476,7 +476,7 @@ body::before {
 }
 
 .email-text {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.875rem;
   color: var(--text-primary);
   font-weight: 500;
@@ -583,7 +583,7 @@ body::before {
   color: white;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: none;
@@ -686,7 +686,7 @@ body::before {
 }
 
 .user-name {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
@@ -697,7 +697,7 @@ body::before {
 .user-status {
   font-size: 0.875rem;
   color: var(--text-secondary);
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-weight: 400;
 }
 
@@ -709,7 +709,7 @@ body::before {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-weight: 900;
   font-size: 1.25rem;
   color: white;
@@ -1046,7 +1046,7 @@ body::before {
 
 .typing-indicator::before {
   content: "AI PROCESSING";
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.875rem;
   color: var(--accent-primary);
   text-transform: none;
@@ -1127,7 +1127,7 @@ body::before {
   outline: none;
   color: var(--text-primary);
   font-size: 16px;
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-weight: 400;
   transition:
     color 0.3s ease,
@@ -1354,7 +1354,7 @@ body::before {
 
 .new-chat-button-text {
   color: var(--accent-primary);
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -1411,7 +1411,7 @@ body::before {
   padding: 1rem 2rem;
   border-radius: 12px;
   font-size: 0.875rem;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   animation: slideDown 0.3s ease-out;
   box-shadow:
     0 4px 15px rgba(255, 0, 128, 0.3),
@@ -1441,12 +1441,16 @@ body::before {
   }
 }
 
+/* Animate with transform (composited) instead of `left` (layout-affecting).
+   The ::before elements keep their `left: -100%` resting offset, so
+   translateX(0) → translateX(200%) reproduces the exact same sweep without
+   triggering a layout shift on every frame (which otherwise tanks CLS). */
 @keyframes scanLine {
   0% {
-    left: -100%;
+    transform: translateX(0);
   }
   100% {
-    left: 100%;
+    transform: translateX(200%);
   }
 }
 
@@ -1961,7 +1965,7 @@ body::before {
   padding: 0.4rem 0.85rem;
   border: 1px solid var(--border-glow);
   border-radius: 999px;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -1987,7 +1991,7 @@ body::before {
 }
 
 .empty-state-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: clamp(1.6rem, 3.2vw, 2.25rem);
   font-weight: 900;
   letter-spacing: 0.04em;
@@ -2003,7 +2007,7 @@ body::before {
 
 .empty-state-subtitle {
   max-width: 480px;
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-size: 0.95rem;
   line-height: 1.65;
   color: var(--text-secondary);
@@ -2112,7 +2116,7 @@ body::before {
 }
 
 .prompt-chip-tag {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.65rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2121,7 +2125,7 @@ body::before {
 }
 
 .prompt-chip-text {
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-size: 0.92rem;
   line-height: 1.4;
   color: var(--text-primary);
@@ -2137,7 +2141,7 @@ body::before {
   padding: 0.4rem 0.7rem;
   background: none;
   border: 1px solid transparent;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -2370,7 +2374,7 @@ body::before {
 
 .about-panel-eyebrow {
   display: block;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.7rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -2379,7 +2383,7 @@ body::before {
 }
 
 .about-panel-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.25rem;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -2489,7 +2493,7 @@ body::before {
 }
 
 .about-section-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -2514,7 +2518,7 @@ body::before {
 }
 
 .about-section p {
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-size: 0.92rem;
   line-height: 1.65;
   color: var(--text-secondary);
@@ -2580,14 +2584,14 @@ body::before {
   background: var(--chip-bg);
   border: 1px solid var(--chip-border);
   border-radius: 8px;
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-size: 0.82rem;
   color: var(--text-primary);
   backdrop-filter: blur(8px);
 }
 
 .about-stack li span {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -2610,7 +2614,7 @@ body::before {
   background: var(--chip-bg);
   border: 1px solid var(--chip-border);
   border-radius: 10px;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.78rem;
   letter-spacing: 0.05em;
   color: var(--text-primary);
@@ -2641,7 +2645,7 @@ button.portfolio-link {
   background: var(--portfolio-link-bg);
   cursor: pointer;
   font: inherit;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1rem;
   font-weight: 600;
 }
@@ -2804,7 +2808,7 @@ button.portfolio-link[aria-expanded="true"] {
 }
 
 .suggestions-bar-label {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.18em;
@@ -2851,7 +2855,7 @@ button.portfolio-link[aria-expanded="true"] {
   background: var(--chip-bg);
   border: 1px solid var(--chip-border);
   border-radius: 999px;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -2897,7 +2901,7 @@ button.portfolio-link[aria-expanded="true"] {
   padding: 0.35rem 0.6rem;
   background: none;
   border: 1px solid transparent;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -3321,7 +3325,7 @@ button.portfolio-link[aria-expanded="true"] {
 
 .theme-modal-eyebrow {
   display: block;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -3332,7 +3336,7 @@ button.portfolio-link[aria-expanded="true"] {
 }
 
 .theme-modal-title {
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 1.5rem;
   font-weight: 900;
   letter-spacing: 0.05em;
@@ -3342,7 +3346,7 @@ button.portfolio-link[aria-expanded="true"] {
 }
 
 .theme-modal-body {
-  font-family: "Exo 2", sans-serif;
+  font-family: var(--font-exo2), sans-serif;
   font-size: 0.95rem;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.78);
@@ -3370,7 +3374,7 @@ button.portfolio-link[aria-expanded="true"] {
   justify-content: center;
   gap: 0.4rem;
   padding: 0.7rem 1rem;
-  font-family: "Orbitron", monospace;
+  font-family: var(--font-orbitron), monospace;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.12em;
