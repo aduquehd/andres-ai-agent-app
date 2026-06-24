@@ -738,27 +738,6 @@ export function ChatApp() {
           </header>
 
           <div className="about-panel-body">
-            <section className="about-section">
-              <h3 className="about-section-title">What is this?</h3>
-              <p>
-                An AI assistant that represents Andrés Duque — Senior Software Engineer
-                with 10+ years in backend, microservices, and cloud. Ask anything about
-                his career, stack, or projects. I&apos;ll answer in first person, as
-                him.
-              </p>
-            </section>
-
-            <section className="about-section">
-              <h3 className="about-section-title">What you can ask</h3>
-              <ul className="about-list">
-                <li>Career history &amp; specific roles</li>
-                <li>Technical expertise &amp; years per stack</li>
-                <li>Notable projects &amp; open source work</li>
-                <li>Currently learning &amp; what&apos;s next</li>
-                <li>Contact &amp; availability</li>
-              </ul>
-            </section>
-
             <section className="about-section" id="about-how-it-works">
               <h3 className="about-section-title">How it works</h3>
               <p>
