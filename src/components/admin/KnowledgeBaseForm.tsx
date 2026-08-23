@@ -88,7 +88,7 @@ export function KnowledgeBaseForm({ initial, onSaved, onCancel }: Props) {
           className="admin-textarea"
         />
         <p className="mt-2 text-[0.66rem] tracking-[0.18em] uppercase font-mono text-[color:var(--admin-text-muted)]">
-          // embedding will regenerate on save
+          {"// embedding will regenerate on save"}
         </p>
       </div>
 

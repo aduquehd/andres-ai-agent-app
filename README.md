@@ -67,9 +67,9 @@ Clicking a row opens the full thread with per-user metadata (latency, client, IP
 ## 🧰 Stack
 
 - **Next.js 16** (App Router, Turbopack, React 19)
-- **TypeScript 5**
+- **TypeScript 6**
 - **Tailwind v4** + **shadcn/ui** (Radix-based, Nova preset)
-- **TanStack Table**, **Recharts**, **react-hook-form**, **zod**, **sonner**
+- **Recharts** for admin charts, **sonner** for toasts
 - **marked** for chat message rendering
 - **pnpm** as the package manager (pinned via `packageManager` in `package.json`)
 

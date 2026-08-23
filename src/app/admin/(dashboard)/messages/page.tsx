@@ -72,10 +72,18 @@ export default function MessagesPage() {
       });
   }, []);
 
-  // Bump refreshKey when any filter/sort changes so DataPanel refetches + resets offset.
-  useEffect(() => {
+  // Bump refreshKey when any filter/sort changes so DataPanel refetches +
+  // resets offset. Done during render (React's "adjust state when props/state
+  // change" pattern) rather than in an effect.
+  const [prevFilters, setPrevFilters] = useState({ direction, country, sort });
+  if (
+    direction !== prevFilters.direction ||
+    country !== prevFilters.country ||
+    sort !== prevFilters.sort
+  ) {
+    setPrevFilters({ direction, country, sort });
     setRefresh((r) => r + 1);
-  }, [direction, country, sort]);
+  }
 
   // Live updates from the admin WebSocket: refetch on any event that touches
   // the messages list. DataPanel suppresses the loader on background refreshes
@@ -301,7 +309,7 @@ export default function MessagesPage() {
         <select
           value={country}
           onChange={(e) => setCountry(e.target.value)}
-          className="admin-input py-1.5 text-xs uppercase tracking-widest font-[Orbitron]"
+          className="admin-input py-1.5 text-xs uppercase tracking-widest font-[family-name:var(--font-orbitron)]"
           aria-label="Filter by country"
         >
           <option value="">All countries</option>
@@ -395,7 +403,7 @@ export default function MessagesPage() {
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[0.62rem] tracking-[0.18em] uppercase font-[Orbitron] text-[color:var(--admin-text-muted)]">
+      <span className="text-[0.62rem] tracking-[0.18em] uppercase font-[family-name:var(--font-orbitron)] text-[color:var(--admin-text-muted)]">
         {label}
       </span>
       <div className="flex items-center gap-1.5">{children}</div>

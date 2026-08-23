@@ -154,7 +154,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <main className="flex flex-col min-w-0">
         <header className="admin-topbar admin-scan flex h-14 items-center justify-between px-4 md:px-6">
           <div className="admin-breadcrumb truncate">
-            <span className="admin-breadcrumb-slash">//</span>
+            <span className="admin-breadcrumb-slash">{"//"}</span>
             <span>andresai</span>
             <span className="admin-breadcrumb-slash">/</span>
             <span>admin</span>

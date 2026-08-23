@@ -710,7 +710,7 @@ export function ChatApp() {
         >
           <header className="about-panel-header">
             <div>
-              <span className="about-panel-eyebrow">// AndresAI</span>
+              <span className="about-panel-eyebrow">{"// AndresAI"}</span>
               <h2 className="about-panel-title" id="about-panel-title">
                 About this assistant
               </h2>
@@ -890,7 +890,7 @@ export function ChatApp() {
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
           </div>
-          <span className="theme-modal-eyebrow">// SYSTEM ALERT</span>
+          <span className="theme-modal-eyebrow">{"// SYSTEM ALERT"}</span>
           <h2 className="theme-modal-title" id="theme-modal-title">
             Bug risk detected
           </h2>
@@ -950,7 +950,7 @@ export function ChatApp() {
               <polyline points="9 12 11 14 15 10"></polyline>
             </svg>
           </div>
-          <span className="theme-modal-eyebrow">// SYSTEM SECURE</span>
+          <span className="theme-modal-eyebrow">{"// SYSTEM SECURE"}</span>
           <h2 className="theme-modal-title">Bug risk neutralized</h2>
           <p className="theme-modal-body">
             <strong>Dark mode</strong> restored. The codebase is once again hidden from
