@@ -55,15 +55,24 @@ export function ConversationDetailDialog({
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const prevScrollHeightRef = useRef<number | null>(null);
 
-  // Reset state and load both stats + recent messages when a new user is opened.
+  // Reset state during render when a new user is opened (React's "adjust state
+  // when props change" pattern); the effect below then loads stats + messages.
+  const [prevUserId, setPrevUserId] = useState<number | null>(null);
+  if (userId !== prevUserId) {
+    setPrevUserId(userId);
+    if (userId != null) {
+      setStats(null);
+      setMessages([]);
+      setMessagesTotal(0);
+      setLoadingStats(true);
+      setLoadingMessages(true);
+    }
+  }
+
+  // Load both stats + recent messages when a new user is opened.
   useEffect(() => {
     if (userId == null) return;
     let cancelled = false;
-    setStats(null);
-    setMessages([]);
-    setMessagesTotal(0);
-    setLoadingStats(true);
-    setLoadingMessages(true);
 
     getUserStats(userId)
       .then((data) => {
@@ -401,18 +410,17 @@ export function ConversationDetailDialog({
   );
 }
 
+function dayKeyOf(m: MessageRow) {
+  return m.created_at ? new Date(m.created_at).toDateString() : "unknown";
+}
+
 function Thread({ messages }: { messages: MessageRow[] }) {
-  let lastDayKey: string | null = null;
   // Wider gap between bubble groups (4 = 1rem) makes it visually obvious which
   // metadata row belongs to which bubble above it.
   return (
     <div className="space-y-4">
-      {messages.map((m) => {
-        const dayKey = m.created_at
-          ? new Date(m.created_at).toDateString()
-          : "unknown";
-        const showDivider = dayKey !== lastDayKey;
-        lastDayKey = dayKey;
+      {messages.map((m, i) => {
+        const showDivider = i === 0 || dayKeyOf(m) !== dayKeyOf(messages[i - 1]);
         return (
           <div key={m.id}>
             {showDivider ? <DayDivider iso={m.created_at} /> : null}

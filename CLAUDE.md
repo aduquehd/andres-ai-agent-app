@@ -7,9 +7,9 @@ Next.js 16 frontend that serves both the **chat UI at `/`** and the **admin at `
 ## Stack
 
 - **Next.js 16** (App Router, Turbopack, React 19)
-- **TypeScript 5**
+- **TypeScript 6**
 - **Tailwind v4** + **shadcn/ui** (Radix-based components, Nova preset)
-- **TanStack Table**, **react-hook-form**, **zod**, **sonner**
+- **Recharts** for admin charts, **sonner** for toasts
 - **marked** for chat message rendering
 
 ## Commands

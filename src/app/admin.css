@@ -134,11 +134,11 @@
 }
 
 .admin-mono {
-  font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), "SF Mono", ui-monospace, monospace;
 }
 
 .admin-mono-dim {
-  font-family: "JetBrains Mono", "SF Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), "SF Mono", ui-monospace, monospace;
   color: var(--admin-text-dim);
 }
 
@@ -250,7 +250,7 @@
   gap: 0.65rem;
   padding: 0.5rem 0.75rem 0.5rem 1rem;
   border-radius: 8px;
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.78rem;
   letter-spacing: 0.04em;
   color: var(--admin-text-dim);
@@ -319,7 +319,7 @@
 }
 
 .admin-breadcrumb {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.78rem;
   color: var(--admin-text-dim);
   letter-spacing: 0.04em;
@@ -399,14 +399,14 @@
 }
 
 .admin-id {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.78rem;
   color: var(--admin-accent);
   font-weight: 600;
 }
 
 .admin-id-dim {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.78rem;
   color: var(--admin-text-dim);
 }
@@ -537,7 +537,7 @@
   border: 1px solid var(--admin-border);
   border-radius: 8px;
   color: var(--admin-text);
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.85rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -714,7 +714,7 @@
 /* -------------------------------------------------------- Meta line --- */
 
 .admin-meta {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.72rem;
   color: var(--admin-text-dim);
   letter-spacing: 0.02em;
@@ -769,7 +769,7 @@
   text-decoration-color: var(--admin-accent);
 }
 .admin-bubble-md code {
-  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
   font-size: 0.85em;
   padding: 0.05rem 0.35rem;
   border-radius: 3px;

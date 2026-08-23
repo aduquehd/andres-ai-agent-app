@@ -54,15 +54,21 @@ export function DataPanel<T>({
   const [searchTerm, setSearchTerm] = useState("");
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  // Mirror "do we have rows on screen" into a ref, synced in an effect that is
+  // declared before the fetch effect so it always runs first within a commit.
+  // Lets the fetch effect decide on the spinner without depending on items.
   const hasItemsRef = useRef(false);
-  hasItemsRef.current = items.length > 0;
+  useEffect(() => {
+    hasItemsRef.current = items.length > 0;
+  });
 
   // Filter/sort changes bump refreshKey from the parent. Reset offset to 0 so
-  // the user doesn't end up on a now-invalid page. The next effect picks up
-  // the change and refetches at offset 0.
-  const lastRefreshRef = useRef(refreshKey);
-  if (refreshKey !== lastRefreshRef.current) {
-    lastRefreshRef.current = refreshKey;
+  // the user doesn't end up on a now-invalid page. Done during render (React's
+  // "adjust state when props change" pattern); the fetch effect below then
+  // refetches at offset 0.
+  const [prevRefreshKey, setPrevRefreshKey] = useState(refreshKey);
+  if (refreshKey !== prevRefreshKey) {
+    setPrevRefreshKey(refreshKey);
     if (offset !== 0) {
       setOffset(0);
     }
@@ -125,7 +131,7 @@ export function DataPanel<T>({
       <div className="admin-toolbar">
         {searchable ? (
           <form onSubmit={applySearch} className="admin-search">
-            <span className="admin-search-prefix">// query</span>
+            <span className="admin-search-prefix">{"// query"}</span>
             <div className="relative flex-1">
               <Search className="absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-[color:var(--admin-text-muted)]" />
               <input

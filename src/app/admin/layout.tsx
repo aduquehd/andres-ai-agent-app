@@ -1,6 +1,16 @@
 import type { Metadata } from "next";
+import { JetBrains_Mono } from "next/font/google";
 import { AdminBodyClass } from "@/components/admin/AdminBodyClass";
 import "../admin.css";
+
+// Self-hosted via next/font (like Orbitron/Exo 2 in the root layout) instead of
+// a render-blocking Google Fonts <link>. Variable font, so no pinned weights.
+// Exposed as a CSS variable consumed by admin.css.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jetbrains-mono",
+});
 
 export const metadata: Metadata = {
   title: "AndresAI · Ops Console",
@@ -12,14 +22,8 @@ export default function AdminRootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <>
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;800&family=Exo+2:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      />
-      <AdminBodyClass />
-      <div className="dark admin-root">{children}</div>
+      <AdminBodyClass fontClassName={jetbrainsMono.variable} />
+      <div className={`dark admin-root ${jetbrainsMono.variable}`}>{children}</div>
     </>
   );
 }

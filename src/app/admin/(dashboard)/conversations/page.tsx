@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, Clock, Hash } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { ConversationDetailDialog } from "@/components/admin/ConversationDetailDialog";
 import { DataPanel, type Column } from "@/components/admin/DataPanel";
@@ -24,9 +24,14 @@ export default function ConversationsPage() {
   const [sort, setSort] = useState<ConversationSort>("last_activity_desc");
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
-  useEffect(() => {
+  // Bump refreshKey when the sort changes so DataPanel refetches + resets
+  // offset. Done during render (React's "adjust state when props/state change"
+  // pattern) rather than in an effect.
+  const [prevSort, setPrevSort] = useState(sort);
+  if (sort !== prevSort) {
+    setPrevSort(sort);
     setRefresh((r) => r + 1);
-  }, [sort]);
+  }
 
   useAdminLiveStream(
     useCallback((event) => {
@@ -195,7 +200,7 @@ export default function ConversationsPage() {
 function FilterGroup({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[0.62rem] tracking-[0.18em] uppercase font-[Orbitron] text-[color:var(--admin-text-muted)]">
+      <span className="text-[0.62rem] tracking-[0.18em] uppercase font-[family-name:var(--font-orbitron)] text-[color:var(--admin-text-muted)]">
         {label}
       </span>
       <div className="flex items-center gap-1.5">{children}</div>

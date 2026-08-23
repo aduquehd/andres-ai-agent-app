@@ -58,13 +58,23 @@ export function Dashboard() {
 
   // Track the latest messagesRange so the 15s poll fetches the current selection.
   const messagesRangeRef = useRef(messagesRange);
-  messagesRangeRef.current = messagesRange;
+  useEffect(() => {
+    messagesRangeRef.current = messagesRange;
+  }, [messagesRange]);
+
+  // Re-show the loader if the range changes while stats are still unloaded
+  // (loading starts true; after a failed first load it is false with stats
+  // still null). Done during render, not in the fetch effect.
+  const [prevMessagesRange, setPrevMessagesRange] = useState(messagesRange);
+  if (messagesRange !== prevMessagesRange) {
+    setPrevMessagesRange(messagesRange);
+    if (stats === null) setLoading(true);
+  }
 
   // Initial load + refetch when the range changes (loader shown only on first load).
   useEffect(() => {
     let cancelled = false;
     const firstLoad = stats === null;
-    if (firstLoad) setLoading(true);
     getDashboardStats({ messagesRange })
       .then((s) => {
         if (!cancelled) {
@@ -325,13 +335,13 @@ function DashboardContent({
                       : { month: "short", day: "numeric" },
                   )
                 }
-                tick={{ fill: TEXT_DIM, fontSize: 11, fontFamily: "JetBrains Mono" }}
+                tick={{ fill: TEXT_DIM, fontSize: 11, fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace" }}
                 stroke="transparent"
                 interval="preserveStartEnd"
                 minTickGap={32}
               />
               <YAxis
-                tick={{ fill: TEXT_DIM, fontSize: 11, fontFamily: "JetBrains Mono" }}
+                tick={{ fill: TEXT_DIM, fontSize: 11, fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace" }}
                 stroke="transparent"
                 width={40}
                 allowDecimals={false}
@@ -448,7 +458,7 @@ function DashboardContent({
                     tick={{
                       fill: TEXT_DIM,
                       fontSize: 11,
-                      fontFamily: "JetBrains Mono",
+                      fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
                     }}
                     stroke="transparent"
                     allowDecimals={false}
@@ -459,7 +469,7 @@ function DashboardContent({
                     tick={{
                       fill: TEXT_DIM,
                       fontSize: 11,
-                      fontFamily: "JetBrains Mono",
+                      fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
                     }}
                     stroke="transparent"
                     width={48}
@@ -519,7 +529,7 @@ function KpiCard({
       <div className="admin-mono text-[2rem] leading-none font-semibold text-[color:var(--admin-text)]">
         {value}
       </div>
-      <div className="mt-2 text-[0.72rem] tracking-[0.18em] uppercase font-[Orbitron] text-[color:var(--admin-text-dim)]">
+      <div className="mt-2 text-[0.72rem] tracking-[0.18em] uppercase font-[family-name:var(--font-orbitron)] text-[color:var(--admin-text-dim)]">
         {label}
       </div>
     </div>
@@ -568,7 +578,7 @@ function TodayPanel({ stats }: { stats: DashboardStats }) {
                 </span>
               </div>
               <div className="admin-mono text-xl font-semibold">{it.value}</div>
-              <div className="mt-1 text-[0.62rem] tracking-[0.16em] uppercase font-[Orbitron] text-[color:var(--admin-text-dim)]">
+              <div className="mt-1 text-[0.62rem] tracking-[0.16em] uppercase font-[family-name:var(--font-orbitron)] text-[color:var(--admin-text-dim)]">
                 {it.label}
               </div>
             </div>
