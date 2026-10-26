@@ -71,6 +71,23 @@ class HttpError extends Error {
   }
 }
 
+// FastAPI sends a string for an HTTPException and a list of {loc, msg} for
+// request validation errors.
+function formatDetail(detail: unknown): string {
+  if (!Array.isArray(detail)) return String(detail);
+  return detail
+    .map((item) => {
+      if (typeof item !== "object" || !item || !("msg" in item)) return String(item);
+      // loc is the path to the bad value, e.g. ["body", "items", 0] -> "items.0".
+      const field =
+        "loc" in item && Array.isArray(item.loc)
+          ? item.loc.filter((part: unknown) => part !== "body").join(".")
+          : "";
+      return field ? `${field}: ${item.msg}` : String(item.msg);
+    })
+    .join("; ");
+}
+
 async function adminFetch<T>(
   path: string,
   init: RequestInit = {},
@@ -84,15 +101,17 @@ async function adminFetch<T>(
     ...init,
   });
   if (!response.ok) {
-    let body: unknown;
+    // Read the body once: after a failed response.json() it is already consumed.
+    const text = await response.text();
+    let body: unknown = text;
     try {
-      body = await response.json();
+      body = JSON.parse(text);
     } catch {
-      body = await response.text();
+      // Not JSON (a proxy error page or an empty body), keep the raw text.
     }
     const detail =
       typeof body === "object" && body && "detail" in body
-        ? String((body as { detail: unknown }).detail)
+        ? formatDetail((body as { detail: unknown }).detail)
         : response.statusText;
     throw new HttpError(detail || `Request failed (${response.status})`, response.status, body);
   }
@@ -385,4 +404,58 @@ export function updateAgentContext(
 
 export function deleteAgentContext(id: number): Promise<{ ok: boolean }> {
   return adminFetch(`/api/admin/agent-contexts/${id}`, { method: "DELETE" });
+}
+
+// --- Model config
+
+export type ModelEffort = "low" | "medium" | "high" | "xhigh" | "max";
+
+export interface ModelConfigPayload {
+  /** Pydantic AI model string, "<provider>:<model id>". */
+  model: string;
+  effort: ModelEffort | null;
+  max_tokens: number | null;
+  temperature: number | null;
+}
+
+export interface ModelConfig extends ModelConfigPayload {
+  /** "default": nothing is saved, the API runs on its AGENT_MODEL setting. */
+  source: "database" | "default";
+  default_model: string;
+  /** What a blank max_tokens means: the API's own cap. */
+  default_max_tokens: number;
+  updated_at: string | null;
+}
+
+export type ModelConfigTestResult =
+  | {
+      ok: true;
+      output: string;
+      model: string;
+      latency_ms: number;
+      input_tokens: number;
+      output_tokens: number;
+    }
+  | { ok: false; error: string };
+
+export function getModelConfig(): Promise<ModelConfig> {
+  return adminFetch(`/api/admin/model-config`);
+}
+
+export function updateModelConfig(payload: ModelConfigPayload): Promise<ModelConfig> {
+  return adminFetch(`/api/admin/model-config`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export function resetModelConfig(): Promise<ModelConfig> {
+  return adminFetch(`/api/admin/model-config`, { method: "DELETE" });
+}
+
+export function testModelConfig(payload: ModelConfigPayload): Promise<ModelConfigTestResult> {
+  return adminFetch(`/api/admin/model-config/test`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
