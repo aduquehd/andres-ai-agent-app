@@ -12,6 +12,7 @@ import {
   LogOut,
   MessageSquare,
   MessagesSquare,
+  SlidersHorizontal,
   Users,
   type LucideIcon,
 } from "lucide-react";
@@ -39,6 +40,7 @@ const NAV: NavItem[] = [
   { href: "/admin/agent-messages", label: "Agent Messages", cmd: "agent.messages", icon: Bot },
   { href: "/admin/knowledge-base", label: "Knowledge Base", cmd: "kb.entries", icon: Brain },
   { href: "/admin/agent-contexts", label: "Agent Contexts", cmd: "agent.contexts", icon: Database },
+  { href: "/admin/model-config", label: "Model Config", cmd: "agent.model", icon: SlidersHorizontal },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

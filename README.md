@@ -141,6 +141,7 @@ Open <http://localhost:3000/> for the chat or <http://localhost:3000/admin> for 
 | `/admin/agent-messages`       | Pydantic AI message lists per user.                                        |
 | `/admin/knowledge-base`       | RAG entries — backend re-embeds on save.                                   |
 | `/admin/agent-contexts`       | Agent context (system prompt) entries.                                     |
+| `/admin/model-config`         | Agent model and request settings, with a test run before saving.           |
 
 ## 🔌 Talking to the API
 

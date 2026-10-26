@@ -28,7 +28,7 @@ This project uses **pnpm** (declared via the `packageManager` field in `package.
 
 - `/` — chat UI (route group `(chat)`). Uses the original cyberpunk CSS verbatim (`src/app/chat.css`) and Orbitron/Exo 2 fonts loaded from Google Fonts.
 - `/admin` — admin overview (under route group `(dashboard)` which wraps in `AdminShell` and enforces auth).
-- `/admin/users`, `/admin/messages`, `/admin/agent-messages`, `/admin/knowledge-base`, `/admin/agent-contexts`.
+- `/admin/users`, `/admin/messages`, `/admin/agent-messages`, `/admin/knowledge-base`, `/admin/agent-contexts`, `/admin/model-config`.
 - `/admin/login` — login page (sibling of `(dashboard)`, not wrapped by the shell so unauthenticated users can reach it).
 
 ## Talking to the API
